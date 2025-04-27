@@ -1,0 +1,12 @@
+services:
+  hasktorch:
+    build: .
+    ports:
+      - "8890:8888"
+    command: jupyter lab --ip 0.0.0.0 --NotebookApp.token='gpt'
+    volumes:
+      - /Users/theocastillo/Documents/GPT2/:/home/ubuntu/GPT2/
+
+
+
+# docker compose up -d
