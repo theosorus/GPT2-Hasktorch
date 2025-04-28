@@ -10,3 +10,6 @@ docker compose up -d
 ```bash
 docker compose exec hasktorch /bin/bash -c "cd /home/ubuntu/GPT2/ && stack run"
 ```
+
+## use Jupyter
+```http://localhost:8890/lab```
