@@ -4,6 +4,8 @@ import Torch
 import CasualSelfAttention (casualSelfAttentionInit, casualSelfAttentionForward, Config(..))
 import NormalLayer ( normalLayerInit, normalLayerForward, Config(..))
 import MLP (mlpInit, mlpForward, Config(..))
+import EmbeddingLayer (embeddingLayerInit, embeddingLayerForward, Config(..))
+import Utils (randInt)
 
 
 --shape output `shouldBe` [batchSize, seqLen, configNEmbd config]
@@ -72,6 +74,21 @@ test_normalLayer = do
         shape output `shouldBe` [batchSize, seqLen, embdDim]
 
 
+test_embedding :: Spec
+test_embedding = do
+    let batchSize = 1
+        seqLen = 10
+        embdDim = 64
+        vocabSize = 1000
+        -- vocabSize , embdDim
+        config = EmbeddingLayer.Config vocabSize embdDim
+    it "embedding output shape should match [batchSize, seqLen, embdDim]" $ do
+        embedding <- embeddingLayerInit config
+        input <- randInt [batchSize, seqLen] 0 (vocabSize - 1)
+        let output = embeddingLayerForward embedding input
+        shape output `shouldBe` [batchSize, seqLen, embdDim]
+
+
 
 
 
@@ -82,4 +99,5 @@ main = hspec $ do
     test_casualSelfAttention
     test_mlp
     test_normalLayer
+    test_embedding
     
