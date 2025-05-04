@@ -2,10 +2,8 @@
 {-# LANGUAGE DeriveGeneric #-}
 
 
-
-
 module EmbeddingLayer (
-    Config(..)
+    EmbeddingLayerConfig(..)
   , EmbeddingLayer(..)
   , embeddingLayerInit
   , embeddingLayerForward
@@ -17,7 +15,7 @@ import Torch
 import GHC.Generics
 
 
-data Config = Config
+data EmbeddingLayerConfig = EmbeddingLayerConfig
   { 
     configVocabSize :: Int,
     configNEmbd :: Int
@@ -31,8 +29,8 @@ data EmbeddingLayer = EmbeddingLayer
   } deriving (Generic, Show)
 
 
-embeddingLayerInit :: Config -> IO EmbeddingLayer
-embeddingLayerInit Config{..} = do
+embeddingLayerInit :: EmbeddingLayerConfig -> IO EmbeddingLayer
+embeddingLayerInit EmbeddingLayerConfig{..} = do
   weight <- randIO' [configVocabSize, configNEmbd]
   return EmbeddingLayer
     { 
@@ -45,4 +43,4 @@ embeddingLayerForward
   :: EmbeddingLayer
   -> Tensor
   -> Tensor
-embeddingLayerForward EmbeddingLayer{..} input = F.embedding' weight input 
+embeddingLayerForward EmbeddingLayer{..} input = F.embedding' weight input

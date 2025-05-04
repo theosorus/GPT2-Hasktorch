@@ -3,7 +3,7 @@
 
 
 module CasualSelfAttention (
-    Config(..)
+    CasualSelfAttentionConfig(..)
   , CasualSelfAttention(..)
   , casualSelfAttentionInit
   , casualSelfAttentionForward
@@ -22,7 +22,7 @@ import Torch.TensorOptions
 
 import Control.Monad (when)
 
-data Config = Config
+data CasualSelfAttentionConfig = CasualSelfAttentionConfig
   { configNEmbd :: Int
   , configNHead :: Int
   , configBlockSize :: Int
@@ -47,8 +47,8 @@ createCausalMask seqLen =
 
 
 
-casualSelfAttentionInit :: Config -> IO CasualSelfAttention
-casualSelfAttentionInit Config{..} = do
+casualSelfAttentionInit :: CasualSelfAttentionConfig -> IO CasualSelfAttention
+casualSelfAttentionInit CasualSelfAttentionConfig{..} = do
   
   -- Vérification que nEmbd est divisible par nHead
   when (configNEmbd `mod` configNHead /= 0) $

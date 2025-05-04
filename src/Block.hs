@@ -2,7 +2,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 
 module Block (
-    Block.Config(..)
+    BlockConfig(..)
   , Block(..)
   , blockInit
     , blockForward
@@ -21,7 +21,7 @@ import NormalLayer
 
 
 
-data Config = Config
+data BlockConfig = BlockConfig
     { embdDim_config :: Int,
 
     nHead_config :: Int,
@@ -36,13 +36,13 @@ data Block = Block
     , mlp :: MLP
   } deriving (Generic, Show)
 
-blockInit :: Block.Config -> IO Block
-blockInit Block.Config{..} = do
-  ln1 <- normalLayerInit (NormalLayer.Config [embdDim_config] 1e-5  False )
-  ln2 <- normalLayerInit (NormalLayer.Config [embdDim_config] 1e-5  False )
+blockInit :: BlockConfig -> IO Block
+blockInit BlockConfig{..} = do
+  ln1 <- normalLayerInit (NormalLayerConfig [embdDim_config] 1e-5  False )
+  ln2 <- normalLayerInit (NormalLayerConfig [embdDim_config] 1e-5  False )
 
-  attn <- casualSelfAttentionInit (CasualSelfAttention.Config embdDim_config nHead_config blockSize_config)
-  mlp <- mlpInit (MLP.Config embdDim_config)
+  attn <- casualSelfAttentionInit (CasualSelfAttentionConfig embdDim_config nHead_config blockSize_config)
+  mlp <- mlpInit (MLPConfig embdDim_config)
 
 
      

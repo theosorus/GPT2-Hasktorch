@@ -2,7 +2,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 
 module MLP (
-    Config(..)
+    MLPConfig(..)
   , MLP(..)
   , mlpInit
   , mlpForward
@@ -24,7 +24,7 @@ import Control.Monad (when)
 
 
 
-data Config = Config
+data MLPConfig = MLPConfig
   { configNEmbd :: Int
   } deriving (Show, Eq)
 
@@ -35,8 +35,8 @@ data MLP = MLP
   } deriving (Generic, Show)
 
 
-mlpInit :: Config -> IO MLP
-mlpInit Config{..} = do
+mlpInit :: MLPConfig -> IO MLP
+mlpInit MLPConfig{..} = do
   
   fcLayer <- sample (LinearSpec configNEmbd (4 * configNEmbd))
   projLayer <- sample (LinearSpec (4 * configNEmbd) configNEmbd)

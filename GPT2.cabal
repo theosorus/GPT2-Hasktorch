@@ -27,9 +27,12 @@ library
   exposed-modules:
       Block
       CasualSelfAttention
+      EmbeddingLayer
       Lib
       MLP
+      Model
       NormalLayer
+      Utils
   other-modules:
       Paths_GPT2
   autogen-modules:

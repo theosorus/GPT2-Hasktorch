@@ -2,7 +2,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 
 module NormalLayer (
-    Config(..)
+    NormalLayerConfig(..)
   , NormalLayer(..)
   , normalLayerInit
   , normalLayerForward
@@ -13,7 +13,7 @@ import GHC.Generics
 import Torch
 import Torch.Functional.Internal as FI
 
-data Config = Config
+data NormalLayerConfig = NormalLayerConfig
     { normalized_shape_config :: [Int]
     , eps_config :: Double
     , cudnn_enable_config :: Bool
@@ -28,8 +28,8 @@ data NormalLayer = NormalLayer
   } deriving (Generic, Show)
 
 
-normalLayerInit :: Config -> IO NormalLayer
-normalLayerInit Config{..} = do
+normalLayerInit :: NormalLayerConfig -> IO NormalLayer
+normalLayerInit NormalLayerConfig{..} = do
   
 
   weight <- randIO' normalized_shape_config
