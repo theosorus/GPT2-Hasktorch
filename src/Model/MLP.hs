@@ -1,7 +1,7 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE DeriveGeneric #-}
 
-module MLP (
+module Model.MLP (
     MLPConfig(..)
   , MLP(..)
   , mlpInit

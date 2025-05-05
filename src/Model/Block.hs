@@ -1,7 +1,7 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE DeriveGeneric #-}
 
-module Block (
+module Model.Block (
     BlockConfig(..)
   , Block(..)
   , blockInit
@@ -14,9 +14,9 @@ import Torch.NN as NN
 import Torch.Functional as F
 import Torch.Functional.Internal as FI
 
-import MLP
-import CasualSelfAttention
-import NormalLayer
+import Model.MLP
+import Model.CasualSelfAttention
+import Model.NormalLayer
 
 
 

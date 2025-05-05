@@ -3,17 +3,19 @@
 
 
 
-module Model where 
+module Model.GPT where 
 
 
 
 import GHC.Generics
 import Torch
 import qualified Torch.Functional as F
+import qualified Torch.Functional.Internal as FI
+import Torch.NN as NN
 
-import EmbeddingLayer 
-import Block
-import NormalLayer
+import Model.EmbeddingLayer 
+import Model.Block
+import Model.NormalLayer
 
 
 data ModelConfig = ModelConfig
@@ -71,6 +73,40 @@ modelInit ModelConfig{..} = do
       ,nBlock = configNBlock
       }
 
+
+modelForward :: Model -> Tensor -> Tensor
+modelForward Model{..} input = 
+    let
+        pos = toDType Int64 (arange' 0 ((shape input) !! 1) 1) -- (T)
+        pos_emnb = embeddingLayerForward wpe pos --  (T, n_embd)
+        input_emnb = embeddingLayerForward wte input -- (B, T, n_embd)
+        embd = input_emnb + (FI.unsqueeze pos_emnb 0) -- (B, T, n_embd)
+
+        outputBlock = foldl (\acc block -> blockForward block acc) embd h -- (B, T, n_embd)
+
+        outputBlockNormalized = normalLayerForward ln_f outputBlock -- (B, T, n_embd)
+        logits = NN.linear lm_head outputBlockNormalized -- (B, T, vocab_size)
+    in 
+        logits
+
+
+processBatch :: Model -> Tensor -> Tensor
+processBatch model input = 
+    let
+        output = modelForward model input
+    in
+        output
+        
+
+
+-- computeLoss :: Tensor -> Tensor -> Tensor
+-- computeLoss input target = 
+--     let
+--         loss = F.crossEntropy logits target
+--     in
+--         loss
   
 
                       
+
+

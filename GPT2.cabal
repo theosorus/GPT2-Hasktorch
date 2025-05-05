@@ -25,13 +25,14 @@ source-repository head
 
 library
   exposed-modules:
-      Block
-      CasualSelfAttention
-      EmbeddingLayer
+      Data.Dataloader
       Lib
-      MLP
-      Model
-      NormalLayer
+      Model.Block
+      Model.CasualSelfAttention
+      Model.EmbeddingLayer
+      Model.GPT
+      Model.MLP
+      Model.NormalLayer
       Utils
   other-modules:
       Paths_GPT2
@@ -64,6 +65,8 @@ test-suite GPT2-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      DataTest
+      ModelTest
       Paths_GPT2
   autogen-modules:
       Paths_GPT2

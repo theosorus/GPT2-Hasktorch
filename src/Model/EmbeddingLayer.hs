@@ -2,7 +2,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 
 
-module EmbeddingLayer (
+module Model.EmbeddingLayer (
     EmbeddingLayerConfig(..)
   , EmbeddingLayer(..)
   , embeddingLayerInit

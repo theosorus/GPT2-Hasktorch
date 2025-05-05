@@ -1,7 +1,7 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE DeriveGeneric #-}
 
-module NormalLayer (
+module Model.NormalLayer (
     NormalLayerConfig(..)
   , NormalLayer(..)
   , normalLayerInit

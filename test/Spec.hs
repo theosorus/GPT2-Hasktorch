@@ -1,92 +1,14 @@
 import Test.Hspec
-import Block (blockInit, blockForward,BlockConfig(..))
-import Torch
-import CasualSelfAttention (casualSelfAttentionInit, casualSelfAttentionForward, CasualSelfAttentionConfig(..))
-import NormalLayer ( normalLayerInit, normalLayerForward, NormalLayerConfig(..))
-import MLP (mlpInit, mlpForward, MLPConfig(..))
-import EmbeddingLayer (embeddingLayerInit, embeddingLayerForward, EmbeddingLayerConfig(..))
-import Utils (randInt)
+
+
+
+import DataTest
+import ModelTest
 
 
 --shape output `shouldBe` [batchSize, seqLen, configNEmbd config]
 
 
-test_block :: Spec
-test_block = do
-    let batchSize = 1
-        seqLen = 10
-        embdDim = 64
-        nHead = 8
-        blockSize = 10
-        -- configNEmbd , configNHead  , configBlockSize 
-        config = BlockConfig embdDim nHead blockSize
-    it "blockForward output shape should match [batchSize, seqLen, embdDim]" $ do
-        block <- blockInit config
-        input <- randIO' [batchSize, seqLen, embdDim]
-        let output = blockForward block input
-        shape output `shouldBe` [batchSize, seqLen, embdDim]
-
-
-test_casualSelfAttention :: Spec
-test_casualSelfAttention = do
-    let batchSize = 1
-        seqLen = 10
-        embdDim = 64
-        nHead = 8
-        blockSize = 10
-        -- configNEmbd , configNHead  , configBlockSize 
-        config = CasualSelfAttentionConfig embdDim nHead blockSize
-    it "casualSelfAttention output shape should match [batchSize, seqLen, embdDim]" $ do
-        block <- casualSelfAttentionInit config
-        input <- randIO' [batchSize, seqLen, embdDim]
-        let output = casualSelfAttentionForward block input
-        shape output `shouldBe` [batchSize, seqLen, embdDim]
-
-test_mlp :: Spec
-test_mlp = do
-    let batchSize = 1
-        seqLen = 10
-        embdDim = 64
-        nHead = 8
-        blockSize = 10
-        -- configNEmbd , configNHead  , configBlockSize 
-        config = MLPConfig embdDim
-    it "mlp output shape should match [batchSize, seqLen, embdDim]" $ do
-        mlp <- mlpInit config
-        input <- randIO' [batchSize, seqLen, embdDim]
-        let output = mlpForward mlp input
-        shape output `shouldBe` [batchSize, seqLen, embdDim]
-
-
-test_normalLayer :: Spec
-test_normalLayer = do
-    let batchSize = 1
-        seqLen = 10
-        embdDim = 64
-        nHead = 8
-        blockSize = 10
-        -- configNEmbd , configNHead  , configBlockSize 
-        config = NormalLayerConfig [embdDim] 1e-5 False
-    it "normalLayer output shape should match [batchSize, seqLen, embdDim]" $ do
-        normalLayer <- normalLayerInit config
-        input <- randIO' [batchSize, seqLen, embdDim]
-        let output = normalLayerForward normalLayer input
-        shape output `shouldBe` [batchSize, seqLen, embdDim]
-
-
-test_embedding :: Spec
-test_embedding = do
-    let batchSize = 1
-        seqLen = 10
-        embdDim = 64
-        vocabSize = 1000
-        -- vocabSize , embdDim
-        config = EmbeddingLayerConfig vocabSize embdDim
-    it "embedding output shape should match [batchSize, seqLen, embdDim]" $ do
-        embedding <- embeddingLayerInit config
-        input <- randInt [batchSize, seqLen] 0 (vocabSize - 1)
-        let output = embeddingLayerForward embedding input
-        shape output `shouldBe` [batchSize, seqLen, embdDim]
 
 
 
@@ -100,4 +22,8 @@ main = hspec $ do
     test_mlp
     test_normalLayer
     test_embedding
+    test_model
+    test_dataloader_length
+    test_dataloader_size_first_item
+    test_dataloader_size_last_item
     

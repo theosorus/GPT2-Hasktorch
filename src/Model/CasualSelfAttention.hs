@@ -2,7 +2,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 
 
-module CasualSelfAttention (
+module Model.CasualSelfAttention (
     CasualSelfAttentionConfig(..)
   , CasualSelfAttention(..)
   , casualSelfAttentionInit
