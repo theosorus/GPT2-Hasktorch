@@ -17,6 +17,8 @@ import Model.EmbeddingLayer
 import Model.Block
 import Model.NormalLayer
 
+import Data.Dataloader (DataLoader,Batch)
+
 
 data ModelConfig = ModelConfig
   { configNEmbd :: Int
@@ -90,21 +92,40 @@ modelForward Model{..} input =
         logits
 
 
-processBatch :: Model -> Tensor -> Tensor
-processBatch model input = 
+processBatch :: Model -> Batch -> (Tensor,Tensor)
+processBatch model (x,y) = 
+  -- x :  (B, T) 
+  -- y :  (B, T)
+  -- output : (B, T, vocab_size)
     let
-        output = modelForward model input
+        output = modelForward model x
+        nbLogits = last $ shape output 
+        reshapeOutput = FI.reshape output [-1,nbLogits] -- (B*T, vocab_size)
+        reshapeY = FI.reshape y [-1] -- (B*T)
+        loss = computeCrossEntropyLoss reshapeOutput reshapeY -- (B*T)
     in
-        output
+        (output,loss)
         
 
+-- cross_entropy_lossSource
+-- :: Tensor	self
+-- -> Tensor	target
+-- -> Tensor	weight
+-- -> Int reduction
+-- -> Int ignore_index
+-- -> Double	label_smoothing
+-- -> Tensor	 
 
--- computeLoss :: Tensor -> Tensor -> Tensor
--- computeLoss input target = 
---     let
---         loss = F.crossEntropy logits target
---     in
---         loss
+computeCrossEntropyLoss :: Tensor -> Tensor -> Tensor
+computeCrossEntropyLoss output target = 
+  -- output : (B*T, vocab_size)
+  -- target : (B*T)
+    let
+      weight = ones' [last (shape output)]
+      loss = FI.cross_entropy_loss output target weight 1 (-100) 0.0
+
+    in
+      loss
   
 
                       

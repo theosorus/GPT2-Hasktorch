@@ -8,6 +8,7 @@ import GHC.Generics
 
 
 type DataLoader = [(Tensor, Tensor)]
+type Batch = (Tensor, Tensor)
 
 
 -- input Tensor  :[N]

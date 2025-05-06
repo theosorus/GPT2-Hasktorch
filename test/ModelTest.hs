@@ -8,7 +8,7 @@ import Model.NormalLayer ( normalLayerInit, normalLayerForward, NormalLayerConfi
 import Model.MLP (mlpInit, mlpForward, MLPConfig(..))
 import Model.EmbeddingLayer (embeddingLayerInit, embeddingLayerForward, EmbeddingLayerConfig(..))
 import Utils (randInt)
-import Model.GPT (modelInit, modelForward, ModelConfig(..))
+import Model.GPT 
 
 test_block :: Spec
 test_block = do
@@ -104,3 +104,36 @@ test_model = do
         input <- randInt [batchSize, seqLen] 0 (vocabSize - 1)
         let output = modelForward model input
         shape output `shouldBe` [batchSize, seqLen, vocabSize]
+
+
+test_computeLoss :: Spec
+test_computeLoss = do
+    let batchSize = 16
+        seqLen = 10
+        vocabSize = 100
+    it "computeLoss output should match [] (scalar)" $ do
+        output <- randIO' [batchSize* seqLen , vocabSize] 
+        target <- randInt [batchSize * seqLen] 0 (vocabSize - 1)
+        let loss = computeCrossEntropyLoss output target
+        shape loss `shouldBe` [] -- scalar
+
+
+test_processBatch :: Spec
+test_processBatch = do
+    let batchSize = 16
+        seqLen = 10
+        vocabSize = 100
+        embdDim = 256
+        nHead = 8
+        blockSize = 128
+        nBlock = 2
+        -- configNEmbd configNBlock configVocabSize configNHead configBlockSize 
+        config = ModelConfig embdDim nBlock vocabSize nHead blockSize
+    it "processBatch output shape should match [batchSize, seqLen, vocabSize] and loss should match []" $ do
+        model <- modelInit config
+        x <- randInt [batchSize, seqLen] 0 (vocabSize - 1)
+        y <- randInt [batchSize, seqLen] 0 (vocabSize - 1)
+        let input = (x, y)
+        let (output,loss) = processBatch model input
+        shape output `shouldBe` [batchSize, seqLen, vocabSize]
+        shape loss `shouldBe` [] -- scalar
