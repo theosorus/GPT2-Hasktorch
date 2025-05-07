@@ -33,6 +33,7 @@ library
       Model.GPT
       Model.MLP
       Model.NormalLayer
+      Training
       Utils
   other-modules:
       Paths_GPT2

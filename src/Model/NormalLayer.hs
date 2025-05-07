@@ -1,5 +1,6 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveAnyClass #-}
 
 module Model.NormalLayer (
     NormalLayerConfig(..)
@@ -21,23 +22,21 @@ data NormalLayerConfig = NormalLayerConfig
 
 data NormalLayer = NormalLayer
   { normalized_shape :: [Int]
-  , weight :: Tensor
-  , bias :: Tensor
+  , weight :: Parameter
+  , bias :: Parameter
   , eps :: Double
   , cudnn_enable :: Bool
-  } deriving (Generic, Show)
+  } deriving (Generic, Show,Parameterized)
 
 
 normalLayerInit :: NormalLayerConfig -> IO NormalLayer
 normalLayerInit NormalLayerConfig{..} = do
-  
-
-  weight <- randIO' normalized_shape_config
-  bias <- randIO' normalized_shape_config
-     
+  wTensor <- randIO' normalized_shape_config
+  bTensor <- randIO' normalized_shape_config
+  weight <- makeIndependent wTensor
+  bias <- makeIndependent bTensor
   return NormalLayer
-    { 
-        normalized_shape = normalized_shape_config
+    { normalized_shape = normalized_shape_config
     , weight = weight
     , bias = bias
     , eps = eps_config
@@ -47,5 +46,6 @@ normalLayerInit NormalLayerConfig{..} = do
 normalLayerForward
   :: NormalLayer
   -> Tensor
-  ->  Tensor
-normalLayerForward NormalLayer{..} input = FI.layer_norm input normalized_shape weight bias eps cudnn_enable
+  -> Tensor
+normalLayerForward NormalLayer{..} input =
+  FI.layer_norm input normalized_shape (toDependent weight) (toDependent bias) eps cudnn_enable

@@ -105,6 +105,9 @@ processBatch model (x,y) =
         loss = computeCrossEntropyLoss reshapeOutput reshapeY -- (B*T)
     in
         (output,loss)
+
+
+
         
 
 -- cross_entropy_lossSource
@@ -127,6 +130,8 @@ computeCrossEntropyLoss output target =
     in
       loss
   
+
+
 
                       
 
