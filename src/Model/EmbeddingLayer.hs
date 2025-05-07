@@ -1,5 +1,6 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveAnyClass #-}
 
 
 module Model.EmbeddingLayer (
@@ -25,13 +26,14 @@ data EmbeddingLayerConfig = EmbeddingLayerConfig
 data EmbeddingLayer = EmbeddingLayer
   { embdDim :: Int
     ,vocabSize :: Int
-    ,weight :: Tensor
-  } deriving (Generic, Show)
+    ,weight :: Parameter
+  } deriving (Generic, Show, Parameterized)
 
 
 embeddingLayerInit :: EmbeddingLayerConfig -> IO EmbeddingLayer
 embeddingLayerInit EmbeddingLayerConfig{..} = do
-  weight <- randIO' [configVocabSize, configNEmbd]
+  wTensor <- randIO' [configVocabSize, configNEmbd]
+  weight <- makeIndependent wTensor
   return EmbeddingLayer
     { 
         embdDim = configNEmbd
@@ -43,4 +45,4 @@ embeddingLayerForward
   :: EmbeddingLayer
   -> Tensor
   -> Tensor
-embeddingLayerForward EmbeddingLayer{..} input = F.embedding' weight input
+embeddingLayerForward EmbeddingLayer{..} input = F.embedding' (toDependent weight) input
