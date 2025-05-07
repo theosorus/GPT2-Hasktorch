@@ -3,7 +3,7 @@
 
 
 module Model.CasualSelfAttention (
-    CasualSelfAttentionConfig(..)
+  CasualSelfAttentionConfig(..)
   , CasualSelfAttention(..)
   , casualSelfAttentionInit
   , casualSelfAttentionForward
@@ -42,25 +42,24 @@ createCausalMask :: Int -> Tensor
 createCausalMask seqLen =
   FI.reshape triangle [1, 1, seqLen, seqLen]
   where
-    triangle = FI.tril onesMatrix 0
-    onesMatrix = ones' [seqLen, seqLen]
+  triangle = FI.tril onesMatrix 0
+  onesMatrix = ones' [seqLen, seqLen]
 
 
 
 casualSelfAttentionInit :: CasualSelfAttentionConfig -> IO CasualSelfAttention
 casualSelfAttentionInit CasualSelfAttentionConfig{..} = do
   
-  -- Vérification que nEmbd est divisible par nHead
+  -- Check that nEmbd is divisible by nHead
   when (configNEmbd `mod` configNHead /= 0) $
-    error "configNEmbd doit être divisible par configNHead"
+    error "configNEmbd must be divisible by configNHead"
   
-  -- Initialisation des couches linéaires
+  -- Initialize linear layers
   cAttn <- sample (LinearSpec configNEmbd (3 * configNEmbd))
   cProj <- sample (LinearSpec configNEmbd configNEmbd)
 
   let attentionBias = createCausalMask configBlockSize
-                      
-  return CasualSelfAttention
+  return $ CasualSelfAttention
     { cAttn = cAttn
     , cProj = cProj
     , nHead = configNHead
@@ -72,67 +71,67 @@ casualSelfAttentionInit CasualSelfAttentionConfig{..} = do
 scaledDotProductAttention :: Tensor -> Tensor -> Tensor -> Maybe Tensor -> Maybe Float -> Tensor
 scaledDotProductAttention q k v mask dropout = 
   let
-    -- Calcul des scores d'attention et mise à l'échelle
-    scaleFactor = FI.sqrt (fromIntegral $ last $ shape k)
-    scores = FI.div (FI.matmul q (FI.transpose k (-2) (-1))) scaleFactor
+  -- Calculate attention scores and scaling
+  scaleFactor = FI.sqrt (fromIntegral $ last $ shape k)
+  scores = FI.div (FI.matmul q (FI.transpose k (-2) (-1))) scaleFactor
   
-    
-    -- Application du masque causal si fourni
-    maskedScores = case mask of
-      Just m -> scores * m + (1.0 - m) * (-1e10)
-      Nothing -> scores
-    
-    -- Softmax sur les scores
-    tyype = dtype q
-    weights = FI.softmax maskedScores (-1) tyype
-    
-    -- Application du dropout si spécifié
-    droppedWeights = case dropout of
-       --Just rate -> dropout2d weights rate True
-       Just rate -> weights
-       Nothing -> weights
-    
-    -- Valeurs pondérées
-    output = FI.matmul weights v
+  
+  -- Apply causal mask if provided
+  maskedScores = case mask of
+    Just m -> scores * m + (1.0 - m) * (-1e10)
+    Nothing -> scores
+  
+  -- Softmax on scores
+  tyype = dtype q
+  weights = FI.softmax maskedScores (-1) tyype
+  
+  -- Apply dropout if specified
+  droppedWeights = case dropout of
+     --Just rate -> dropout2d weights rate True
+     Just rate -> weights
+     Nothing -> weights
+  
+  -- Weighted values
+  output = FI.matmul weights v
   in
-    output
+  output
 
 
 casualSelfAttentionForward :: CasualSelfAttention -> Tensor -> Tensor
 casualSelfAttentionForward CasualSelfAttention{..} x = let
-  -- Obtenir les dimensions du batch, sequence length et embedding size
+  -- Get batch dimensions, sequence length and embedding size
   shapes = shape x
   batchSize = head shapes 
   seqLen = shapes !! 1
   embedSize = shapes !! 2
-  headSize = Prelude.div embedSize nHead  -- Division d'entiers, pas de tenseurs
+  headSize = Prelude.div embedSize nHead  -- Integer division, not tensor division
   
-  -- Projeter l'entrée en query, key, value
-  -- Supposons que c'est une opération linéaire:
+  -- Project input to query, key, value
+  -- Assuming this is a linear operation:
   projected = NN.linear cAttn x
   
-  -- Diviser en 3 parties selon la dimension 2
+  -- Split into 3 parts along dimension 2
   qkvList = FI.chunk projected 3 2 
   q = head qkvList 
   k = qkvList !! 1
   v = qkvList !! 2
   
-  -- -- Reshape pour multi-têtes d'attention
+  -- Reshape for multi-head attention
   q' = FI.transpose (F.view [batchSize, seqLen, nHead, headSize] q ) 1 2
   k' = FI.transpose (F.view [batchSize, seqLen, nHead, headSize] k) 1 2
   v' = FI.transpose (F.view [batchSize, seqLen, nHead, headSize] v ) 1 2
 
   
   currentMask = createCausalMask seqLen
-  -- -- Attention avec masque causal
+  -- Attention with causal mask
   att = scaledDotProductAttention q' k' v' (Just currentMask) Nothing
   
-  -- -- Reshape pour la sortie
+  -- Reshape for output
   y1 = FI.transpose att 1 2
   y2 = contiguous y1
   y = F.view [batchSize, seqLen, embedSize] y2 
   
-  -- -- Projection finale
+  -- Final projection
   output = NN.linear cProj y
   in 
    output

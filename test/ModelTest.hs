@@ -10,8 +10,8 @@ import Model.EmbeddingLayer (embeddingLayerInit, embeddingLayerForward, Embeddin
 import Utils (randInt)
 import Model.GPT 
 
-test_block :: Spec
-test_block = do
+testBlock :: Spec
+testBlock = do
     let batchSize = 1
         seqLen = 10
         embdDim = 64
@@ -26,8 +26,8 @@ test_block = do
         shape output `shouldBe` [batchSize, seqLen, embdDim]
 
 
-test_casualSelfAttention :: Spec
-test_casualSelfAttention = do
+testCasualSelfAttention :: Spec
+testCasualSelfAttention = do
     let batchSize = 1
         seqLen = 10
         embdDim = 64
@@ -41,8 +41,8 @@ test_casualSelfAttention = do
         let output = casualSelfAttentionForward block input
         shape output `shouldBe` [batchSize, seqLen, embdDim]
 
-test_mlp :: Spec
-test_mlp = do
+testMlp :: Spec
+testMlp = do
     let batchSize = 1
         seqLen = 10
         embdDim = 64
@@ -57,8 +57,8 @@ test_mlp = do
         shape output `shouldBe` [batchSize, seqLen, embdDim]
 
 
-test_normalLayer :: Spec
-test_normalLayer = do
+testNormalLayer :: Spec
+testNormalLayer = do
     let batchSize = 1
         seqLen = 10
         embdDim = 64
@@ -73,8 +73,8 @@ test_normalLayer = do
         shape output `shouldBe` [batchSize, seqLen, embdDim]
 
 
-test_embedding :: Spec
-test_embedding = do
+testEmbedding :: Spec
+testEmbedding = do
     let batchSize = 1
         seqLen = 10
         embdDim = 64
@@ -88,8 +88,8 @@ test_embedding = do
         shape output `shouldBe` [batchSize, seqLen, embdDim]
 
 
-test_model :: Spec
-test_model = do
+testModel :: Spec
+testModel = do
     let batchSize = 1
         seqLen = 10
         embdDim = 256
@@ -106,8 +106,8 @@ test_model = do
         shape output `shouldBe` [batchSize, seqLen, vocabSize]
 
 
-test_computeLoss :: Spec
-test_computeLoss = do
+testComputeLoss :: Spec
+testComputeLoss = do
     let batchSize = 16
         seqLen = 10
         vocabSize = 100
@@ -118,8 +118,8 @@ test_computeLoss = do
         shape loss `shouldBe` [] -- scalar
 
 
-test_processBatch :: Spec
-test_processBatch = do
+testProcessBatch :: Spec
+testProcessBatch = do
     let batchSize = 16
         seqLen = 10
         vocabSize = 100

@@ -19,18 +19,18 @@ main :: IO ()
 main = hspec $ do
 
     -- MODEL
-    test_block
-    test_casualSelfAttention
-    test_mlp
-    test_normalLayer
-    test_embedding
-    test_model
-    test_computeLoss
-    test_processBatch
+    testBlock
+    testCasualSelfAttention
+    testMlp
+    testNormalLayer
+    testEmbedding
+    testModel
+    testComputeLoss
+    testProcessBatch
 
     -- DATA
-    test_dataloader_length
-    test_dataloader_size_first_item
-    test_dataloader_size_last_item
+    testDataloaderLength
+    testDataloaderSizeFirstItem
+    testDataloaderSizeLastItem
     
     

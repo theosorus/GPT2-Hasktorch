@@ -19,34 +19,34 @@ chunksOf _ [] = []
 chunksOf n xs = let (chunk, rest) = splitAt n xs in chunk : chunksOf n rest
 
 
--- | Construit un DataLoader à partir d’un tensor 1-D de tokens de longueur N.
+-- | Builds a DataLoader from a 1-D tensor of tokens of length N.
 createDataLoader
   :: Int     -- ^ batchSize
   -> Int     -- ^ seqLen
-  -> Tensor  -- ^ tokens de forme [N]
+  -> Tensor  -- ^ tokens of shape [N]
   -> DataLoader
 createDataLoader batchSize seqLen tokens = 
   let 
     -- Get tensor size as Int
     tokenSize = Torch.size 0 tokens 
     
-    -- Créer les entrées (x): tranches de longueur seqLen
+    -- Create inputs (x): slices of length seqLen
     createInputs = 
       [ FI.slice tokens 0 i (i + seqLen) 1
       | i <- [0 .. tokenSize - seqLen - 1] ]
     
-    -- Créer les cibles (y): tranches de longueur seqLen décalées de 1
+    -- Create targets (y): slices of length seqLen offset by 1
     createTargets = 
       [ FI.slice tokens 0 (i + 1) (i + seqLen + 1) 1
       | i <- [0 .. tokenSize - seqLen - 1] ]
     
-    -- Combiner les entrées et les cibles en un dataset
+    -- Combine inputs and targets into a dataset
     dataset = zip createInputs createTargets
     
-    -- Découper en batchs de taille batchSize
+    -- Split into batches of size batchSize
     batches = filter (\chunk -> length chunk == batchSize) (chunksOf batchSize dataset)
     
-    -- Traiter chaque batch pour créer des tensors empilés
+    -- Process each batch to create stacked tensors
     processBatch batch =
       let inputs = map fst batch
           targets = map snd batch

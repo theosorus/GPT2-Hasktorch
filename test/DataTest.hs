@@ -7,8 +7,8 @@ import Torch hiding (div)
 
 
 
-test_dataloader_length :: Spec
-test_dataloader_length = do
+testDataloaderLength :: Spec
+testDataloaderLength = do
     let batchSize = 8
         seqLen = 10
         
@@ -18,8 +18,8 @@ test_dataloader_length = do
         length dataloader `shouldBe` (1000 - seqLen) `div` batchSize
 
 
-test_dataloader_size_first_item :: Spec
-test_dataloader_size_first_item = do
+testDataloaderSizeFirstItem :: Spec
+testDataloaderSizeFirstItem = do
     let batchSize = 8
         seqLen = 10
         
@@ -31,8 +31,8 @@ test_dataloader_size_first_item = do
         shape y `shouldBe` [batchSize, seqLen]
 
 
-test_dataloader_size_last_item :: Spec
-test_dataloader_size_last_item = do
+testDataloaderSizeLastItem :: Spec
+testDataloaderSizeLastItem = do
     let batchSize = 8
         seqLen = 10
         
