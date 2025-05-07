@@ -4,6 +4,7 @@ import Test.Hspec
 
 import DataTest
 import ModelTest
+import TrainingTest
 
 
 --shape output `shouldBe` [batchSize, seqLen, configNEmbd config]
@@ -26,11 +27,15 @@ main = hspec $ do
     testEmbedding
     testModel
     testComputeLoss
-    testProcessBatch
+    
 
     -- DATA
     testDataloaderLength
     testDataloaderSizeFirstItem
     testDataloaderSizeLastItem
+
+    -- TRAINING
+    testProcessBatch
+    testTrainBatch
     
     

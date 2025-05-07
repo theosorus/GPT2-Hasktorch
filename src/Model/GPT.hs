@@ -37,7 +37,6 @@ data Model = Model
   lm_head :: Linear,
     nEmbd :: Int,
     nHead :: Int,
-    nLayer :: Int,
     nBlock :: Int,
     blockSize :: Int,
     vocabSize :: Int
@@ -93,19 +92,7 @@ modelForward Model{..} input =
         logits
 
 
-processBatch :: Model -> Batch -> (Tensor,Tensor)
-processBatch model (x,y) = 
-  -- x :  (B, T) 
-  -- y :  (B, T)
-  -- output : (B, T, vocab_size)
-    let
-        output = modelForward model x
-        nbLogits = last $ shape output 
-        reshapeOutput = FI.reshape output [-1,nbLogits] -- (B*T, vocab_size)
-        reshapeY = FI.reshape y [-1] -- (B*T)
-        loss = computeCrossEntropyLoss reshapeOutput reshapeY -- (B*T)
-    in
-        (output,loss)
+
 
 
 

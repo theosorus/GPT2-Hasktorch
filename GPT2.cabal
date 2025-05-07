@@ -68,6 +68,7 @@ test-suite GPT2-test
   other-modules:
       DataTest
       ModelTest
+      TrainingTest
       Paths_GPT2
   autogen-modules:
       Paths_GPT2
