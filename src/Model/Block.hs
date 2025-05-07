@@ -1,5 +1,6 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveAnyClass #-}
 
 module Model.Block (
     BlockConfig(..)
@@ -34,7 +35,7 @@ data Block = Block
     , attn :: CasualSelfAttention
     , ln2 :: NormalLayer
     , mlp :: MLP
-  } deriving (Generic, Show)
+  } deriving (Generic, Show,Parameterized)
 
 blockInit :: BlockConfig -> IO Block
 blockInit BlockConfig{..} = do

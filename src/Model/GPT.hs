@@ -1,5 +1,6 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveAnyClass #-}
 
 
 
@@ -41,7 +42,7 @@ data Model = Model
     blockSize :: Int,
     vocabSize :: Int
 
-  } deriving (Generic)
+  } deriving (Generic,Parameterized)
 
 
 instance Show Model where

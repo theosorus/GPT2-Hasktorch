@@ -1,5 +1,6 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveAnyClass #-}
 
 
 module Model.CasualSelfAttention (
@@ -34,7 +35,7 @@ data CasualSelfAttention = CasualSelfAttention
   , nHead :: Int
   , nEmbd :: Int
   , attentionBias :: Tensor
-  } deriving (Generic, Show)
+  } deriving (Generic, Show,Parameterized)
 
 
 
