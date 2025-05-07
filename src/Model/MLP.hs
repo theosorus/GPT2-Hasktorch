@@ -1,5 +1,6 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveAnyClass #-}
 
 module Model.MLP (
     MLPConfig(..)
@@ -32,7 +33,7 @@ data MLP = MLP
   { fcLayer :: Linear
   , projLayer :: Linear
   , nEmbd :: Int
-  } deriving (Generic, Show)
+  } deriving (Generic, Show, Parameterized)
 
 
 mlpInit :: MLPConfig -> IO MLP
