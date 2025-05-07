@@ -77,7 +77,6 @@ scaledDotProductAttention q k v mask dropout =
   scores = FI.div (FI.matmul q (FI.transpose k (-2) (-1))) scaleFactor
   
   
-  -- Apply causal mask if provided
   maskedScores = case mask of
     Just m -> scores * m + (1.0 - m) * (-1e10)
     Nothing -> scores
@@ -86,9 +85,7 @@ scaledDotProductAttention q k v mask dropout =
   tyype = dtype q
   weights = FI.softmax maskedScores (-1) tyype
   
-  -- Apply dropout if specified
   droppedWeights = case dropout of
-     --Just rate -> dropout2d weights rate True
      Just rate -> weights
      Nothing -> weights
   
@@ -105,10 +102,8 @@ casualSelfAttentionForward CasualSelfAttention{..} x = let
   batchSize = head shapes 
   seqLen = shapes !! 1
   embedSize = shapes !! 2
-  headSize = Prelude.div embedSize nHead  -- Integer division, not tensor division
+  headSize = Prelude.div embedSize nHead  
   
-  -- Project input to query, key, value
-  -- Assuming this is a linear operation:
   projected = NN.linear cAttn x
   
   -- Split into 3 parts along dimension 2
@@ -132,7 +127,6 @@ casualSelfAttentionForward CasualSelfAttention{..} x = let
   y2 = contiguous y1
   y = F.view [batchSize, seqLen, embedSize] y2 
   
-  -- Final projection
   output = NN.linear cProj y
   in 
    output
