@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Data.Dataloader
+      Data.File
       Lib
       Model.Block
       Model.CasualSelfAttention
@@ -43,7 +44,10 @@ library
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
-      base >=4.7 && <5
+      aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
     , hasktorch
   default-language: Haskell2010
 
@@ -58,7 +62,10 @@ executable GPT2-exe
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       GPT2
+    , aeson
     , base >=4.7 && <5
+    , bytestring
+    , containers
     , hasktorch
   default-language: Haskell2010
 
@@ -67,6 +74,7 @@ test-suite GPT2-test
   main-is: Spec.hs
   other-modules:
       DataTest
+      FileTest
       ModelTest
       TrainingTest
       Paths_GPT2
@@ -78,7 +86,10 @@ test-suite GPT2-test
   build-depends:
       GPT2
     , QuickCheck
+    , aeson
     , base >=4.7 && <5
+    , bytestring
+    , containers
     , hasktorch
     , hspec
   default-language: Haskell2010

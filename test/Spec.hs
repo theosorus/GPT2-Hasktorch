@@ -5,6 +5,7 @@ import Test.Hspec
 import DataTest
 import ModelTest
 import TrainingTest
+import FileTest
 
 
 --shape output `shouldBe` [batchSize, seqLen, configNEmbd config]
@@ -39,4 +40,7 @@ main = hspec $ do
     testTrainBatch
     testProcessEpoch
     
+
+    -- FILE
+    testLoadJson
     
