@@ -37,5 +37,6 @@ main = hspec $ do
     -- TRAINING
     testProcessBatch
     testTrainBatch
+    testProcessEpoch
     
     

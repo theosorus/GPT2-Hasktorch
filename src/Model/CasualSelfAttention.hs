@@ -117,7 +117,7 @@ casualSelfAttentionForward CasualSelfAttention{..} x = let
   k' = FI.transpose (F.view [batchSize, seqLen, nHead, headSize] k) 1 2
   v' = FI.transpose (F.view [batchSize, seqLen, nHead, headSize] v ) 1 2
 
-  
+  -- TODO : implement flash attention
   currentMask = createCausalMask seqLen
   -- Attention with causal mask
   att = scaledDotProductAttention q' k' v' (Just currentMask) Nothing

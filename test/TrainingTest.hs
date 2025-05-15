@@ -6,6 +6,7 @@ import Torch
 import Test.Hspec
 import Utils (randInt)
 import Model.GPT
+import Data.Dataloader
 
 
 testProcessBatch :: Spec
@@ -40,13 +41,15 @@ testTrainBatch = do
         blockSize = 128
         nBlock = 2
         lr = 0.001
-        optimizer = GD
+        
         -- configNEmbd configNBlock configVocabSize configNHead configBlockSize 
         config = ModelConfig embdDim nBlock vocabSize nHead blockSize
     it "trainBatch must return newModel output : [batchSize, seqLen, vocabSize] and loss : []" $ do
         
         -- Initialize the model
         model <- modelInit config
+
+        let optimizer = mkAdam 0 0.9 0.999 (flattenParameters model)
 
         -- create data
         x <- randInt [batchSize, seqLen] 0 (vocabSize - 1)
@@ -62,5 +65,37 @@ testTrainBatch = do
         -- Check the output shapes
         shape output `shouldBe` [batchSize, seqLen, vocabSize]
         shape loss `shouldBe` [] -- scalar
+
+
+testProcessEpoch :: Spec
+testProcessEpoch = do
+    let batchSize = 16
+        seqLen = 10
+        vocabSize = 100
+        embdDim = 256
+        nHead = 8
+        blockSize = 128
+        nBlock = 2
+        lr = 0.001
+        gradientAccumulationStep = 2
+        
+        -- configNEmbd configNBlock configVocabSize configNHead configBlockSize 
+        config = ModelConfig embdDim nBlock vocabSize nHead blockSize
+
+    it "processEpoch must return newModel output" $ do
+
+        input <- randInt [1000] 0 10
+        let dataloader = createDataLoader batchSize seqLen input
+        -- Initialize the model
+        model <- modelInit config
+
+        let optimizer = mkAdam 0 0.9 0.999 (flattenParameters model)
+
+        finalModel <- processEpoch model dataloader optimizer lr gradientAccumulationStep
+
+        finalModel `shouldSatisfy` (const True :: Model -> Bool)
+
+        
+
         
         
