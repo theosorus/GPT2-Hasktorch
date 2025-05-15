@@ -49,6 +49,7 @@ library
     , bytestring
     , containers
     , hasktorch
+    , split
   default-language: Haskell2010
 
 executable GPT2-exe
@@ -67,6 +68,7 @@ executable GPT2-exe
     , bytestring
     , containers
     , hasktorch
+    , split
   default-language: Haskell2010
 
 test-suite GPT2-test
@@ -92,4 +94,5 @@ test-suite GPT2-test
     , containers
     , hasktorch
     , hspec
+    , split
   default-language: Haskell2010

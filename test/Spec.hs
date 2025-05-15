@@ -42,5 +42,7 @@ main = hspec $ do
     
 
     -- FILE
-    testLoadJson
+    testLoadVocab
+    testLoadMergeTxt
+    testOneItemMerge
     

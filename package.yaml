@@ -26,6 +26,7 @@ dependencies:
 - aeson
 - bytestring
 - containers
+- split
 
 ghc-options:
 - -Wall
