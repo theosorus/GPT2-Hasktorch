@@ -1,4 +1,12 @@
-# GPT2 haskell implementation
+# GPT2 Hasktorch implementation
+
+The goal of this project is to reproduce GPT-2, created by OpenAI, in the Haskell programming language using the Hasktorch library, drawing inspiration from Andrej Karpathy's implementation in PyTorch.
+
+**Haskell** : https://www.haskell.org/
+
+**Haskorch** : http://hasktorch.org/
+
+**Nano GPT(Karpathy's implementation)** : https://github.com/karpathy/nanoGPT
 
 
 ## Launch the program
