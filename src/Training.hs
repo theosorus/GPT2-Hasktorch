@@ -35,13 +35,16 @@ processEpoch :: (Optimizer opt) => Model -> DataLoader -> opt -> Double -> Int -
 processEpoch model dataloader optimizer lr gradientAccumulationStep = do
     result <- foldM (\(currentModel, currentGrad,currentOptim, iter) batch -> do
         
+        -- forward pass
         let (output, loss) = processBatch currentModel batch 
 
+        -- gradient accumulation
         newGrads <- if isEmptyGradients currentGrad then 
             pure $ grad' loss $ flattenParameters currentModel
           else
             pure $ accumulateGradients currentGrad (grad' loss $ flattenParameters currentModel)
         
+        -- update model parameters
         (finalModel, finalGrad, finalOptim) <- if (iter + 1) `mod` gradientAccumulationStep == 0 then do
           (updatedModel, optState) <- runStep' currentModel optimizer newGrads (realToFrac lr)
           pure (updatedModel, Gradients [],optState)
