@@ -2,6 +2,19 @@ module Config where
 
 import Torch
 
+-- Paths
+dataDir :: String
+dataDir = "data"
+
+vocabPath :: String
+vocabPath = ""
+
+encoding :: String
+encoding = "utf-8"
+
+modelDir :: String
+modelDir = "models"
+
 -- Device Configuration
 device :: Device
 device = Device CPU 0
@@ -48,44 +61,37 @@ maxLr = 6e-4
 minLr :: Double
 minLr = maxLr * 0.1
 
-
-
+-- Unified Configuration
 data Config = Config
-  { vocabSize :: Int
-  , nBlock :: Int
-  , nHead :: Int
-  , nEmbd :: Int
-  , batchSize :: Int
-  , epochs :: Int
-  , evalFreq :: Int
-  , saveFreq :: Int
-  , betas :: (Double, Double)
-  , eps :: Double
-  , weightDecay :: Double
-  , maxLr :: Double
-  , minLr :: Double
+  { configVocabSize :: Int
+  , configNBlock :: Int
+  , configNHead :: Int
+  , configNEmbd :: Int
+  , configBatchSize :: Int
+  , configEpochs :: Int
+  , configEvalFreq :: Int
+  , configSaveFreq :: Int
+  , configBetas :: (Double, Double)
+  , configEps :: Double
+  , configWeightDecay :: Double
+  , configMaxLr :: Double
+  , configMinLr :: Double
   } deriving (Show, Eq)
 
-
+-- Default configuration
 defaultConfig :: Config
 defaultConfig = Config
-  { vocabSize = vocabSize
-  , nBlock = nBlock
-  , nHead = nHead
-  , nEmbd = nEmbd
-  , batchSize = batchSize
-  , epochs = epochs
-  , evalFreq = evalFreq
-  , saveFreq = saveFreq
-  , betas = betas
-  , eps = eps
-  , weightDecay = weightDecay
-  , maxLr = maxLr
-  , minLr = minLr
+  { configVocabSize = vocabSize
+  , configNBlock = nBlock
+  , configNHead = nHead
+  , configNEmbd = nEmbd
+  , configBatchSize = batchSize
+  , configEpochs = epochs
+  , configEvalFreq = evalFreq
+  , configSaveFreq = saveFreq
+  , configBetas = betas
+  , configEps = eps
+  , configWeightDecay = weightDecay
+  , configMaxLr = maxLr
+  , configMinLr = minLr
   }
-
-
-
-
-
-
