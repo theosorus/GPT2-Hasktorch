@@ -65,3 +65,4 @@ tests:
     - GPT2
     - hspec
     - QuickCheck
+    - directory

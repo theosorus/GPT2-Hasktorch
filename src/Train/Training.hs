@@ -1,4 +1,4 @@
-module Training where
+module Train.Training where
 
 import Torch
 import Model.GPT
@@ -6,7 +6,6 @@ import Data.Dataloader (DataLoader, Batch)
 import qualified Torch.Functional as F
 import qualified Torch.Functional.Internal as FI
 import Control.Monad (foldM)
-
 
 processBatch :: Model -> Batch -> (Tensor,Tensor)
 processBatch model (x,y) = 

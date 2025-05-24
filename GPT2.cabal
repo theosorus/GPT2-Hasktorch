@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      Config
       Data.Dataloader
       Data.File
       Lib
@@ -34,7 +35,9 @@ library
       Model.GPT
       Model.MLP
       Model.NormalLayer
-      Training
+      Model.Save
+      Train.Training
+      Train.TrainingTracker
       Utils
   other-modules:
       Paths_GPT2
@@ -78,6 +81,7 @@ test-suite GPT2-test
       DataTest
       FileTest
       ModelTest
+      SaveTest
       TrainingTest
       Paths_GPT2
   autogen-modules:
@@ -92,6 +96,7 @@ test-suite GPT2-test
     , base >=4.7 && <5
     , bytestring
     , containers
+    , directory
     , hasktorch
     , hspec
     , split

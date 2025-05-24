@@ -6,6 +6,7 @@ import DataTest
 import ModelTest
 import TrainingTest
 import FileTest
+import SaveTest
 
 
 --shape output `shouldBe` [batchSize, seqLen, configNEmbd config]
@@ -45,4 +46,7 @@ main = hspec $ do
     testLoadVocab
     testLoadMergeTxt
     testOneItemMerge
+
+    -- SAVE
+    testSaveLoadModel
     

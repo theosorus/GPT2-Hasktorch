@@ -1,6 +1,6 @@
 module TrainingTest where
 
-import Training
+import Train.Training
 import Torch
 
 import Test.Hspec
