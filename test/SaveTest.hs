@@ -37,21 +37,15 @@ testSaveLoadModel = do
         let outputFromInitial = modelForward model inputTest
         let outputFromLoaded = modelForward loadedModel inputTest
 
-        putStrLn $ "Output from initial model: " ++ show outputFromInitial
-        putStrLn $ "Output from loaded model: " ++ show outputFromLoaded
+        -- putStrLn $ "Output from initial model: " ++ show outputFromInitial
+        -- putStrLn $ "Output from loaded model: " ++ show outputFromLoaded
 
         -- remove the saved model file
         removeFile "test_model.pth"
 
-        
-        putStrLn $ " Params from initial Model : "++show (map toDependent $ flattenParameters model)
-        putStrLn $ " Params from loaded Model : "++show (map toDependent $ flattenParameters loadedModel)
-
         -- Check if the outputs are the same
         shape outputFromInitial `shouldBe` shape outputFromLoaded
-
-
-        --(equal (outputFromInitial) (outputFromLoaded)) `shouldBe` True
+        (equal (outputFromInitial) (outputFromLoaded)) `shouldBe` True
 
         
         

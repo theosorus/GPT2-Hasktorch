@@ -16,8 +16,8 @@ saveModel path model verbose = do
 loadModel :: FilePath -> ModelConfig ->IO Model 
 loadModel path config = do
     model <- modelInit config
-    loadParams model path
-    pure model
+    loadedModel <- loadParams model path
+    pure loadedModel
 
 
 
