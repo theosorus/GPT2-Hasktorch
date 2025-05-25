@@ -105,6 +105,17 @@ testModel = do
         let output = modelForward model input
         shape output `shouldBe` [batchSize, seqLen, vocabSize]
 
+testAccuracy :: Spec
+testAccuracy = do
+    let batchSize = 16
+        seqLen = 10
+        vocabSize = 100
+    it "computeAccuracy output should match [] (scalar)" $ do
+        output <- randIO' [batchSize, seqLen, vocabSize] 
+        target <- randInt [batchSize, seqLen] 0 (vocabSize - 1)
+        let acc = computeAccuracy output target
+        shape acc `shouldBe` [] -- scalar
+
 
 testComputeLoss :: Spec
 testComputeLoss = do

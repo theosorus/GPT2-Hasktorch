@@ -92,8 +92,12 @@ modelForward Model{..} input =
         logits
 
 
-
-
+computeAccuracy :: Tensor -> Tensor -> Tensor
+computeAccuracy predictions targets = 
+  let correctPredictions = eq (FI.argmax predictions (-1) False) targets
+      numCorrect = F.sumAll correctPredictions
+      total = asTensor $ numel targets
+  in numCorrect / total
 
 
         

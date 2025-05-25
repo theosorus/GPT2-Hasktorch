@@ -29,6 +29,7 @@ main = hspec $ do
     testEmbedding
     testModel
     testComputeLoss
+    testAccuracy
     
 
     -- DATA
