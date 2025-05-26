@@ -15,6 +15,9 @@ encoding = "utf-8"
 modelDir :: String
 modelDir = "models"
 
+modelName :: String
+modelName = "gpt"
+
 -- Device Configuration
 device :: Device
 device = Device CPU 0
