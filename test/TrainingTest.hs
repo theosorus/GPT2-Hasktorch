@@ -91,7 +91,7 @@ testProcessEpoch = do
 
         let optimizer = mkAdam 0 0.9 0.999 (flattenParameters model)
 
-        finalModel <- processEpoch model dataloader optimizer lr gradientAccumulationStep
+        finalModel <- processEpoch model dataloader optimizer lr 
 
         finalModel `shouldSatisfy` (const True :: Model -> Bool)
 

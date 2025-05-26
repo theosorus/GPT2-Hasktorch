@@ -8,7 +8,6 @@ data TrainingTracker = TrainingTracker
   , loss :: [Double]
   , accuracy :: [Double]
   , lastModelPath :: String
-  , config :: Config
   } deriving (Show, Eq)
 
 

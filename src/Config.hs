@@ -24,13 +24,17 @@ vocabSize :: Int
 vocabSize = 30000
 
 nBlock :: Int
-nBlock = 12
+nBlock = 2
 
 nHead :: Int
-nHead = 12
+nHead = 2
 
 nEmbd :: Int
-nEmbd = 768
+nEmbd = 128
+
+blockSize :: Int
+blockSize = 128
+
 
 -- Training Configuration
 batchSize :: Int
@@ -39,15 +43,22 @@ batchSize = 4
 epochs :: Int
 epochs = 2
 
-evalFreq :: Int
-evalFreq = 10
 
 saveFreq :: Int
-saveFreq = 50
+saveFreq = 20
+
+printFreq :: Int
+printFreq = 2
 
 -- Optimizer Configuration
-betas :: (Double, Double)
+betas :: (Float, Float)
 betas = (0.9, 0.95)
+
+beta1 :: Float
+beta1 = fst betas
+
+beta2 :: Float
+beta2 = snd betas
 
 eps :: Double
 eps = 1e-8
@@ -61,37 +72,9 @@ maxLr = 6e-4
 minLr :: Double
 minLr = maxLr * 0.1
 
--- Unified Configuration
-data Config = Config
-  { configVocabSize :: Int
-  , configNBlock :: Int
-  , configNHead :: Int
-  , configNEmbd :: Int
-  , configBatchSize :: Int
-  , configEpochs :: Int
-  , configEvalFreq :: Int
-  , configSaveFreq :: Int
-  , configBetas :: (Double, Double)
-  , configEps :: Double
-  , configWeightDecay :: Double
-  , configMaxLr :: Double
-  , configMinLr :: Double
-  } deriving (Show, Eq)
+gradientAccumulationStep :: Int
+gradientAccumulationStep = 1
 
--- Default configuration
-defaultConfig :: Config
-defaultConfig = Config
-  { configVocabSize = vocabSize
-  , configNBlock = nBlock
-  , configNHead = nHead
-  , configNEmbd = nEmbd
-  , configBatchSize = batchSize
-  , configEpochs = epochs
-  , configEvalFreq = evalFreq
-  , configSaveFreq = saveFreq
-  , configBetas = betas
-  , configEps = eps
-  , configWeightDecay = weightDecay
-  , configMaxLr = maxLr
-  , configMinLr = minLr
-  }
+learningRate :: Double
+learningRate = 0.001
+
