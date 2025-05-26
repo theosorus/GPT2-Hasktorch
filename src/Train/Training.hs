@@ -7,6 +7,7 @@ import qualified Torch.Functional as F
 import qualified Torch.Functional.Internal as FI
 import Control.Monad (foldM)
 import qualified Config as C
+import Model.Save 
 
 processBatch :: Model -> Batch -> (Tensor,Tensor)
 processBatch model (x,y) = 
@@ -62,7 +63,8 @@ processEpoch model dataloader optimizer lr = do
 
 
         if (iter + 1) `mod` C.saveFreq == 0 then do
-          putStrLn $ "Saving model at iteration: " ++ show (iter + 1)
+          let modelPath = getModelPath C.modelName C.modelDir 0 (iter + 1)
+          saveModel modelPath finalModel True
         else 
           pure ()
 
