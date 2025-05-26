@@ -12,6 +12,10 @@ saveModel path model verbose = do
     else
         pure ()
 
+getModelPath :: String -> String -> Int -> Int -> FilePath
+getModelPath modelName modelDir nEpoch nBatch = 
+    modelDir ++ "/" ++ modelName ++ "_e" ++ show nEpoch ++ "_b" ++ show nBatch ++ ".pt"
+
 
 loadModel :: FilePath -> ModelConfig ->IO Model 
 loadModel path config = do
