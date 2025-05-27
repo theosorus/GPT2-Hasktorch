@@ -27,6 +27,9 @@ dependencies:
 - bytestring
 - containers
 - split
+- utf8-string
+- aeson
+- text
 
 ghc-options:
 - -Wall
@@ -52,6 +55,8 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - GPT2
+
+
 
 tests:
   GPT2-test:

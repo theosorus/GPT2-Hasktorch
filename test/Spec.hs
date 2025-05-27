@@ -7,7 +7,7 @@ import ModelTest
 import TrainingTest
 import FileTest
 import SaveTest
-
+import LazyDataloaderTest
 
 --shape output `shouldBe` [batchSize, seqLen, configNEmbd config]
 
@@ -50,4 +50,8 @@ main = hspec $ do
 
     -- SAVE
     testSaveLoadModel
+
+    -- LAZY DATALOADER
+    testCountBatches
+    testSizeBatches
     
