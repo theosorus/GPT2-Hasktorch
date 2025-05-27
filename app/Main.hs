@@ -13,6 +13,13 @@ main :: IO ()
 main = do
     putStrLn "Hello, Haskell!"
     -- configNEmbd configNBlock configVocabSize configNHead configBlockSize 
+
+    tokens <- randintIO' 0 1000 [1000]
+    save [tokens] "data/tokens/tokens1.pt"
+    save [tokens] "data/tokens/tokens2.pt"
+    save [tokens] "data/tokens/tokens3.pt"
+
+
     dataset <- randInt [1000] 0 C.vocabSize
     let dataloader = createDataLoader C.batchSize C.blockSize dataset
         

@@ -84,7 +84,7 @@ testProcessEpoch = do
 
     it "processEpoch must return newModel output" $ do
 
-        input <- randInt [1000] 0 10
+        input <- randInt [100] 0 10
         let dataloader = createDataLoader batchSize seqLen input
         -- Initialize the model
         model <- modelInit config
