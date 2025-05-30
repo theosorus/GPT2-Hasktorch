@@ -18,8 +18,9 @@ testCountBatches = do
         let wti = wordToIndexFactory wordlst
             vs  = length wordlst
             bbs = 2048    
-            tbs = 512    
-        dl <- initLazyDataloader testFilePath bbs tbs wti vs
+            batchSize = 2
+            seqLen = 256    
+        dl <- initLazyDataloader testFilePath bbs batchSize seqLen wti vs
         count <- countBatches dl
         count `shouldBe` 1 
 
@@ -33,14 +34,15 @@ testSizeBlock= do
         let wti = wordToIndexFactory wordlst
             vs  = length wordlst
             bbs = 2048    
-            tbs = 512    
-        dl <- initLazyDataloader testFilePath bbs tbs wti vs
+            batchSize = 2
+            seqLen = 64
+        dl <- initLazyDataloader testFilePath bbs batchSize seqLen wti vs
 
         let loopTest d = do
               mb <- getNextBlock d
               case mb of
                 Just (batch, d') -> do
-                  (size 0 batch) `shouldBe` tbs
+                  (size 0 batch) `shouldBe` batchSize*seqLen +batchSize -- [B * T+1]
                   loopTest d'
                 Nothing          -> return ()
         loopTest dl
@@ -48,21 +50,28 @@ testSizeBlock= do
 
 testSizeBatch :: Spec
 testSizeBatch= do 
-    let testFilePath = "data/tests/small_text.txt"
+    let testFilePath = "data/tests/full_text.txt"
         vocabTestPath = "data/tests/vocab_test.json"
     it "All batches in lazy dataloader should have the good size" $ do
         wordlst <- loadWordsJson vocabTestPath
         let wti = wordToIndexFactory wordlst
             vs  = length wordlst
             bbs = 2048    
-            tbs = 512    
-        dl <- initLazyDataloader testFilePath bbs tbs wti vs
+            batchSize = 2
+            seqLen = 16
+        dl <- initLazyDataloader testFilePath bbs batchSize seqLen wti vs
         
         batch <- getNextBatch dl
         case batch of
           Just ((x, y), dl') -> do
-            putStrLn $ "x shape: " ++ show (shape x)
-            putStrLn $ "y shape: " ++ show (shape y)
+            -- putStrLn $ "x shape: " ++ show (shape x)
+            -- putStrLn $ "y shape: " ++ show (shape y)
+
+            -- putStrLn $ "x: " ++ show x
+            -- putStrLn $ "y: " ++ show y
+
+            shape x `shouldBe` [batchSize, seqLen]
+            shape y `shouldBe` [batchSize, seqLen]
           Nothing -> fail "Expected to get at least one batch"
 
 

@@ -7,22 +7,25 @@
 
 module Data.LazyDataloader where
 
-import Torch (size)
+import Torch (size,reshape)
 import System.IO (Handle, openFile, IOMode(..), hClose, hSetBinaryMode)
 import qualified Data.ByteString.Lazy as B
 import qualified Torch.Functional.Internal as FI
+import qualified Torch.Functional as F
 import GHC.Generics (Generic)
 import Torch (Tensor, asTensor)
 
 import Data.Preprocess (preprocess)  
 
-    
+type Batch = (Tensor, Tensor)
 
 data LazyDataloader = LazyDataloader
     { wordToIndex    :: B.ByteString -> Int
     , vocabSize      :: Int
     , currentIndex   :: Int
     , tokenBlockSize :: Int
+    , batchSize     :: Int
+    , seqLen         :: Int
     , byteBlockSize  :: Int
     , handle         :: Handle
     , tokenBuffer    :: [Int]
@@ -39,31 +42,37 @@ countBatches dl = go 0 dl
         Nothing      -> return cnt
 
 
-createBatch :: Tensor -> (Tensor,Tensor)
-createBatch t = 
+createBatch :: Tensor -> Int -> Int -> Batch
+createBatch t batchSize seqLen =
   let
-    seqLen = size 0 t
-    input  = FI.slice t 0 0 (seqLen - 1) 1 -- [B, T-1]
-    target = FI.slice t 0 1 seqLen 1      -- [B, T-1]
+    t' = reshape [batchSize, seqLen + 1] t --  [B, T+1]
+    x  = FI.narrow_copy t' 1 0 seqLen -- [B, T]
+    y  = FI.narrow_copy t' 1 1 seqLen -- [B, T]
   in
-    (input, target)
+    (x, y)
 
-
-getNextBatch :: LazyDataloader -> IO (Maybe ((Tensor,Tensor), LazyDataloader))
+getNextBatch :: LazyDataloader -> IO (Maybe (Batch, LazyDataloader))
 getNextBatch dl = do
   mb <- getNextBlock dl
   case mb of
-    Just (batch, dl') -> return (Just (createBatch batch, dl'))
-    Nothing           -> return Nothing
+    Just (batch, dl') ->
+      let bs = batchSize dl'
+          sl = seqLen    dl'
+      in return (Just (createBatch batch bs sl, dl'))
+    Nothing ->
+      return Nothing
+
+
 
 initLazyDataloader ::
   FilePath ->
   Int ->    -- byteBlockSize
-  Int ->    -- tokenBlockSize
+  Int -> -- btachSize
+  Int ->    -- seqLen
   (B.ByteString -> Int) ->
   Int ->
   IO LazyDataloader
-initLazyDataloader path bbs tbs wti vs = do
+initLazyDataloader path bbs bs sq wti vs = do
   h <- openFile path ReadMode
   hSetBinaryMode h True
   return LazyDataloader
@@ -71,7 +80,9 @@ initLazyDataloader path bbs tbs wti vs = do
     , vocabSize      = vs
     , currentIndex   = 0
     , byteBlockSize  = bbs
-    , tokenBlockSize = tbs
+    , batchSize      = bs
+    , seqLen         = sq
+    , tokenBlockSize = (bs * sq) + bs
     , handle         = h
     , tokenBuffer    = []
     }
