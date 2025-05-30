@@ -7,6 +7,9 @@ import Test.Hspec
 import Utils (randInt)
 import Model.GPT
 import Data.Dataloader
+import Data.LazyDataloader
+import Data.File (loadWordsJson)
+import Data.Preprocess (wordToIndexFactory)
 
 
 testProcessBatch :: Spec
@@ -96,6 +99,37 @@ testProcessEpoch = do
         finalModel `shouldSatisfy` (const True :: Model -> Bool)
 
         
+testProcessEpochLazy :: Spec
+testProcessEpochLazy = do
+    let batchSize = 16
+        seqLen = 1024
+        embdDim = 256
+        nHead = 8
+        blockSize = seqLen
+        nBlock = 2
+        lr = 0.001
+        gradientAccumulationStep = 2
+        testFilePath = "data/tests/full_text.txt"
+        vocabTestPath = "data/tests/vocab_test.json"
+        bbs = 16384 --byte block size
+        
+        -- configNEmbd configNBlock configVocabSize configNHead configBlockSize 
+        
 
+    it "processEpochLazy must return newModel output" $ do
+        wordlst <- loadWordsJson vocabTestPath
+        let wti = wordToIndexFactory wordlst
+            vs  = (length wordlst) + 1
+
+        dl <- initLazyDataloader testFilePath bbs batchSize seqLen wti vs
+        -- Initialize the model
+        let config = ModelConfig embdDim nBlock vs nHead blockSize
+        model <- modelInit config
+
+        let optimizer = mkAdam 0 0.9 0.999 (flattenParameters model)
+
+        finalModel <- processEpochLazy model dl optimizer lr 
+
+        finalModel `shouldSatisfy` (const True :: Model -> Bool)
         
         

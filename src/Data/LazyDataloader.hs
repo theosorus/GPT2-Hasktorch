@@ -20,7 +20,8 @@ import Data.Preprocess (preprocess)
 type Batch = (Tensor, Tensor)
 
 data LazyDataloader = LazyDataloader
-    { wordToIndex    :: B.ByteString -> Int
+    { filePath       :: FilePath  ,
+      wordToIndex    :: B.ByteString -> Int
     , vocabSize      :: Int
     , currentIndex   :: Int
     , tokenBlockSize :: Int
@@ -32,14 +33,23 @@ data LazyDataloader = LazyDataloader
     } deriving (Generic)
 
 countBatches :: LazyDataloader -> IO Int
-countBatches dl = go 0 dl
-  where
+countBatches dl = do
+  -- on réouvre un loader « à part » pour le comptage
+  dl' <- initLazyDataloader
+           (filePath dl)
+           (byteBlockSize dl)
+           (batchSize dl)
+           (seqLen dl)
+           (wordToIndex dl)
+           (vocabSize dl)
+  let
     go :: Int -> LazyDataloader -> IO Int
     go cnt d = do
       mb <- getNextBlock d
       case mb of
         Just (_, d') -> go (cnt + 1) d'
         Nothing      -> return cnt
+  go 0 dl'
 
 
 createBatch :: Tensor -> Int -> Int -> Batch
@@ -67,7 +77,7 @@ getNextBatch dl = do
 initLazyDataloader ::
   FilePath ->
   Int ->    -- byteBlockSize
-  Int -> -- btachSize
+  Int ->    -- batchSize
   Int ->    -- seqLen
   (B.ByteString -> Int) ->
   Int ->
@@ -76,7 +86,8 @@ initLazyDataloader path bbs bs sq wti vs = do
   h <- openFile path ReadMode
   hSetBinaryMode h True
   return LazyDataloader
-    { wordToIndex    = wti
+    { filePath       = path                -- <- on stocke le chemin
+    , wordToIndex    = wti
     , vocabSize      = vs
     , currentIndex   = 0
     , byteBlockSize  = bbs
@@ -95,8 +106,10 @@ fillBuffer dl@LazyDataloader{..}
       if B.null chunk
         then return dl
         else do
-          let newTokens = map wordToIndex (preprocess chunk)
-              dl'       = dl { tokenBuffer = tokenBuffer ++ newTokens }
+          let rawTokens    = preprocess chunk
+              mappedTokens = map wordToIndex rawTokens
+              safeTokens   = map (\i -> if i < 0 || i >= vocabSize then 0 else i) mappedTokens
+              dl'          = dl { tokenBuffer = tokenBuffer ++ safeTokens }
           fillBuffer dl'
 
 getNextBlock :: LazyDataloader -> IO (Maybe (Tensor, LazyDataloader))

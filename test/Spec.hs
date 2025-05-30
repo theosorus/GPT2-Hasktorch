@@ -41,6 +41,7 @@ main = hspec $ do
     testProcessBatch
     testTrainBatch
     testProcessEpoch
+    testProcessEpochLazy
     
 
     -- FILE
