@@ -39,8 +39,14 @@ countBatches dl = go 0 dl
         Nothing      -> return cnt
 
 
-createBatch :: Tensor -> -> (Tensor,Tensor)
-
+createBatch :: Tensor -> (Tensor,Tensor)
+createBatch t = 
+  let
+    seqLen = size 0 t
+    input  = FI.slice t 0 0 (seqLen - 1) 1 -- [B, T-1]
+    target = FI.slice t 0 1 seqLen 1      -- [B, T-1]
+  in
+    (input, target)
 
 
 getNextBatch :: LazyDataloader -> IO (Maybe ((Tensor,Tensor), LazyDataloader))
