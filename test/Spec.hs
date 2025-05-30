@@ -53,5 +53,7 @@ main = hspec $ do
 
     -- LAZY DATALOADER
     testCountBatches
-    testSizeBatches
+    testSizeBlock
+    testSizeBatch
+   -- testBatch
     

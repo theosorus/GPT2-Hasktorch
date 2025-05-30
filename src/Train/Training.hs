@@ -52,9 +52,7 @@ processEpoch model dataloader optimizer lr = do
         else
           pure (currentModel, newGrads, currentOptim)
         
-        
-
-
+      
         -- Save , print , eval
         if (iter + 1) `mod` C.printFreq == 0 then do
             putStrLn $ show (iter + 1) ++ "/" ++ show (length dataloader)  ++ ", Loss: " ++ show (loss)
