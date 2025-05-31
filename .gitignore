@@ -6,3 +6,6 @@
 .venv/
 .vscode/
 *.DS_Store
+*.pt
+*.txt
+*.json

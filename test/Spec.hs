@@ -6,7 +6,8 @@ import DataTest
 import ModelTest
 import TrainingTest
 import FileTest
-
+import SaveTest
+import LazyDataloaderTest
 
 --shape output `shouldBe` [batchSize, seqLen, configNEmbd config]
 
@@ -28,6 +29,7 @@ main = hspec $ do
     testEmbedding
     testModel
     testComputeLoss
+    testAccuracy
     
 
     -- DATA
@@ -39,10 +41,20 @@ main = hspec $ do
     testProcessBatch
     testTrainBatch
     testProcessEpoch
+    testProcessEpochLazy
     
 
     -- FILE
     testLoadVocab
     testLoadMergeTxt
     testOneItemMerge
+
+    -- SAVE
+    testSaveLoadModel
+
+    -- LAZY DATALOADER
+    testCountBatches
+    testSizeBlock
+    testSizeBatch
+   -- testBatch
     

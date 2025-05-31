@@ -3,7 +3,8 @@
 module Data.File where
 
 import qualified Data.ByteString.Lazy as B
-import Data.Aeson
+import qualified Data.ByteString.Lazy.Char8 as BL
+import Data.Aeson (decode)
 import qualified Data.Map as Map
 import Data.Maybe (fromMaybe)
 import System.IO
@@ -16,6 +17,7 @@ loadJSON :: FilePath -> IO (Maybe CharMap)
 loadJSON filePath = do
   content <- B.readFile filePath
   return $ decode content
+
 
 -- merge.txt
 -- a l
@@ -36,3 +38,12 @@ readFileToPairs filePath delimiter = do
     toPair delim line = 
         case splitOn delim line of
             [first, second] -> (first, second)  -- Cas normal: deux parties
+
+loadWordsJson :: String -> IO [B.ByteString]
+loadWordsJson path = do
+  jsonData <- BL.readFile path
+  case decode jsonData of
+    Just wordList -> return $ map BL.pack wordList
+    Nothing -> do
+      putStrLn $ "Error: Could not decode JSON from " ++ path
+      return []
