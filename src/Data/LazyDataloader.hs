@@ -34,7 +34,6 @@ data LazyDataloader = LazyDataloader
 
 countBatches :: LazyDataloader -> IO Int
 countBatches dl = do
-  -- on réouvre un loader « à part » pour le comptage
   dl' <- initLazyDataloader
            (filePath dl)
            (byteBlockSize dl)
@@ -86,7 +85,7 @@ initLazyDataloader path bbs bs sq wti vs = do
   h <- openFile path ReadMode
   hSetBinaryMode h True
   return LazyDataloader
-    { filePath       = path                -- <- on stocke le chemin
+    { filePath       = path                
     , wordToIndex    = wti
     , vocabSize      = vs
     , currentIndex   = 0

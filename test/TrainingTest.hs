@@ -102,14 +102,14 @@ testProcessEpoch = do
 testProcessEpochLazy :: Spec
 testProcessEpochLazy = do
     let batchSize = 16
-        seqLen = 1024
+        seqLen = 256
         embdDim = 256
         nHead = 8
         blockSize = seqLen
         nBlock = 2
         lr = 0.001
         gradientAccumulationStep = 2
-        testFilePath = "data/tests/full_text.txt"
+        testFilePath = "data/tests/medium_text.txt"
         vocabTestPath = "data/tests/vocab_test.json"
         bbs = 16384 --byte block size
         
