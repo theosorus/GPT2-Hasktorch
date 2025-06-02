@@ -7,7 +7,9 @@ import qualified Torch.Functional as F
 import qualified Torch.Functional.Internal as FI
 import Data.LazyDataloader (LazyDataloader, getNextBatch, countBatches)
 import Control.Monad (foldM, when)
+
 import qualified Config as C
+import config (modelDevice)
 import Model.Save 
 
 processBatch :: Model -> Batch -> (Tensor,Tensor)
@@ -19,7 +21,10 @@ processBatch model (x,y) =
         output = modelForward model x
         nbLogits = last $ shape output 
         reshapeOutput = FI.reshape output [-1,nbLogits] -- (B*T, vocab_size)
-        reshapeY = FI.reshape y [-1] -- (B*T)
+
+        yDevice = toDevice modelDevice y
+
+        reshapeY = FI.reshape yDevice [-1] -- (B*T)
         loss = computeCrossEntropyLoss reshapeOutput reshapeY -- (B*T)
     in
         (output,loss)
