@@ -2,6 +2,7 @@ module Config where
 
 import Torch
 
+
 -- Paths
 dataDir :: String
 dataDir = "data"
@@ -19,8 +20,8 @@ modelName :: String
 modelName = "gpt"
 
 -- Device Configuration
-device :: Device
-device = Device CPU 0
+modelDevice :: Device
+modelDevice = Device CPU 0
 
 -- Model Architecture
 vocabSize :: Int

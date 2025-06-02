@@ -17,11 +17,12 @@ import Torch
 import Torch.NN as NN
 import Torch.Functional as F
 import Torch.Functional.Internal as FI
-
 import Torch.TensorFactories
 import Torch.TensorOptions
 
 import Control.Monad (when)
+
+import Config (modelDevice)
 
 data CasualSelfAttentionConfig = CasualSelfAttentionConfig
   { configNEmbd :: Int
@@ -41,7 +42,7 @@ data CasualSelfAttention = CasualSelfAttention
 
 createCausalMask :: Int -> Tensor
 createCausalMask seqLen =
-  FI.reshape triangle [1, 1, seqLen, seqLen]
+  toDevice modelDevice $ FI.reshape triangle [1, 1, seqLen, seqLen]
   where
   triangle = FI.tril onesMatrix 0
   onesMatrix = ones' [seqLen, seqLen]
