@@ -97,6 +97,19 @@ initLazyDataloader path bbs bs sq wti vs = do
     , tokenBuffer    = []
     }
 
+
+resetDataloader :: LazyDataloader -> IO LazyDataloader
+resetDataloader dl@LazyDataloader{..} = do
+    hClose handle
+    h <- openFile filePath ReadMode
+    hSetBinaryMode h True
+    return dl { 
+        handle = h,
+        currentIndex = 0,
+        tokenBuffer = []
+    }
+
+
 fillBuffer :: LazyDataloader -> IO LazyDataloader
 fillBuffer dl@LazyDataloader{..}
   | length tokenBuffer >= tokenBlockSize = return dl

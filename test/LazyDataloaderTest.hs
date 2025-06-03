@@ -75,6 +75,24 @@ testSizeBatch= do
           Nothing -> fail "Expected to get at least one batch"
 
 
+testResetLazyDataloader :: Spec
+testResetLazyDataloader = do 
+    let testFilePath = "data/tests/small_text.txt"
+        vocabTestPath = "data/tests/vocab_test.json"
+    it "reset lazy dataloader should reset the current index" $ do
+        wordlst <- loadWordsJson vocabTestPath
+        let wti = wordToIndexFactory wordlst
+            vs  = length wordlst
+            bbs = 2048    
+            batchSize = 2
+            seqLen = 64    
+        dl <- initLazyDataloader testFilePath bbs batchSize seqLen wti vs
+        
+        Just (x1, dl2) <- getNextBlock dl
+        resetDL <- resetDataloader dl2
+        Just (x2, dl3) <- getNextBlock resetDL
+        x1 `shouldBe` x2
+
 
 
 -- testBatch :: Spec

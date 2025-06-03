@@ -40,8 +40,8 @@ main = hspec $ do
     -- TRAINING
     testProcessBatch
     testTrainBatch
-    testProcessEpoch
     testProcessEpochLazy
+    testProcessTraining
     
 
     -- FILE
@@ -56,5 +56,5 @@ main = hspec $ do
     testCountBatches
     testSizeBlock
     testSizeBatch
-   -- testBatch
+    testResetLazyDataloader
     
