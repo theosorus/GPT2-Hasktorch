@@ -70,34 +70,6 @@ testTrainBatch = do
         shape loss `shouldBe` [] -- scalar
 
 
-testProcessEpoch :: Spec
-testProcessEpoch = do
-    let batchSize = 16
-        seqLen = 10
-        vocabSize = 100
-        embdDim = 256
-        nHead = 8
-        blockSize = 128
-        nBlock = 2
-        lr = 0.001
-        gradientAccumulationStep = 2
-        
-        -- configNEmbd configNBlock configVocabSize configNHead configBlockSize 
-        config = ModelConfig embdDim nBlock vocabSize nHead blockSize
-
-    it "processEpoch must return newModel output" $ do
-
-        input <- randInt [100] 0 10
-        let dataloader = createDataLoader batchSize seqLen input
-        -- Initialize the model
-        model <- modelInit config
-
-        let optimizer = mkAdam 0 0.9 0.999 (flattenParameters model)
-
-        finalModel <- processEpoch model dataloader optimizer lr 
-
-        finalModel `shouldSatisfy` (const True :: Model -> Bool)
-
         
 testProcessEpochLazy :: Spec
 testProcessEpochLazy = do
@@ -122,14 +94,56 @@ testProcessEpochLazy = do
             vs  = (length wordlst) + 1
 
         dl <- initLazyDataloader testFilePath bbs batchSize seqLen wti vs
+        nbBatch <- countBatches dl
         -- Initialize the model
         let config = ModelConfig embdDim nBlock vs nHead blockSize
         model <- modelInit config
 
         let optimizer = mkAdam 0 0.9 0.999 (flattenParameters model)
 
-        finalModel <- processEpochLazy model dl optimizer lr 
+        -- model dataloader optimizer nbBatch nbEpoch currentEpoch
+        finalModel <- processEpochLazy model dl optimizer nbBatch 1 1
 
         finalModel `shouldSatisfy` (const True :: Model -> Bool)
+
+
+testProcessTraining :: Spec
+testProcessTraining = do
+    let batchSize = 1
+        seqLen = 64
+        embdDim = 256
+        nHead = 8
+        blockSize = seqLen
+        nBlock = 2
+        lr = 0.001
+        gradientAccumulationStep = 2
+        testFilePath = "data/tests/small_text.txt"
+        vocabTestPath = "data/tests/vocab_test.json"
+        bbs = 16384 --byte block size
+        
+        -- configNEmbd configNBlock configVocabSize configNHead configBlockSize 
+        
+
+    it "processTraining must return newModel output on multiple epochs" $ do
+        wordlst <- loadWordsJson vocabTestPath
+        let wti = wordToIndexFactory wordlst
+            vs  = (length wordlst) + 1
+
+        dl <- initLazyDataloader testFilePath bbs batchSize seqLen wti vs
+        nbBatch <- countBatches dl
+        -- Initialize the model
+        let config = ModelConfig embdDim nBlock vs nHead blockSize
+        model <- modelInit config
+
+        let optimizer = mkAdam 0 0.9 0.999 (flattenParameters model)
+
+
+        finalModel <- processTraining model dl optimizer 2
+
+        finalModel `shouldSatisfy` (const True :: Model -> Bool)
+
+
+
+
         
         
