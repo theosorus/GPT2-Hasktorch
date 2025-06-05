@@ -42,6 +42,7 @@ main = hspec $ do
     testTrainBatch
     testProcessEpochLazy
     testProcessTraining
+    testProcessTrainingWithValid
     
 
     -- FILE
@@ -57,4 +58,5 @@ main = hspec $ do
     testSizeBlock
     testSizeBatch
     testResetLazyDataloader
+    
     

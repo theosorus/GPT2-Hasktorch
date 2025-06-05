@@ -89,9 +89,12 @@ testResetLazyDataloader = do
         dl <- initLazyDataloader testFilePath bbs batchSize seqLen wti vs
         
         Just (x1, dl2) <- getNextBlock dl
-        resetDL <- resetDataloader dl2
-        Just (x2, dl3) <- getNextBlock resetDL
+        resetDL2 <- resetDataloader dl2
+        Just (x2, dl3) <- getNextBlock resetDL2
         x1 `shouldBe` x2
+        resetDL3 <- resetDataloader dl3
+        Just (x3, dl4) <- getNextBlock resetDL3
+        x2 `shouldBe` x3
 
 
 
