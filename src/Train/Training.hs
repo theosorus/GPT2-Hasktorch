@@ -12,7 +12,7 @@ import qualified Config as C
 import Config (modelDevice)
 import Model.Save 
 
-processBatch :: Model -> Batch -> (Tensor,Tensor)
+processBatch :: Model -> Batch -> (Tensor,Tensor,Tensor)
 processBatch model (x,y) = 
   -- x :  (B, T) 
   -- y :  (B, T)
@@ -26,32 +26,34 @@ processBatch model (x,y) =
 
         reshapeY = FI.reshape yDevice [-1] -- (B*T)
         loss = computeCrossEntropyLoss reshapeOutput reshapeY -- (B*T)
+        acc = computeAccuracy reshapeOutput reshapeY -- (B*T)
     in
-        (output,loss)
+        (output,loss,acc)
 
 
 trainBatch :: (Optimizer opt) => Model -> Batch -> opt -> Double -> IO (Model, Tensor, Tensor)
 trainBatch model batch optimizer lr = do
-    let (output,loss) = processBatch model batch
+    let (output,loss,acc) = processBatch model batch
     (newModel, _) <- runStep model optimizer loss (realToFrac lr)  
     pure (newModel,loss,output)
 
 
-processEpochLazy :: (Optimizer opt) => Model -> LazyDataloader -> opt -> Int -> Int -> Int -> IO Model
-processEpochLazy model dataloader optimizer nbBatch nbEpoch currentEpoch = do
+processEpochLazy :: (Optimizer opt) => Model -> LazyDataloader -> Maybe LazyDataloader -> opt -> Int -> Int -> Int ->  IO (Model,Maybe LazyDataloader)
+processEpochLazy model trainDataloader validDataloader optimizer nbBatch nbEpoch currentEpoch = do
   let
-    loop currentModel dl currentOptim currentGrad iter = do
-      mb <- getNextBatch dl
+    loop currentModel trainDl validDl currentOptim currentGrad iter = do
+      mb <- getNextBatch trainDl
       case mb of
-        Nothing -> pure currentModel
-        Just (batch, dl') -> do
-          let (output, loss) = processBatch currentModel batch
+        Nothing -> pure (currentModel,validDl)
+        Just (trainBatch, trainDl') -> do
+          let (output, loss,acc) = processBatch currentModel trainBatch
 
           -- accumulate gradients
           newGrads <- if isEmptyGradients currentGrad
                       then pure $ grad' loss $ flattenParameters currentModel
                       else pure $ accumulateGradients currentGrad (grad' loss $ flattenParameters currentModel)
 
+          -- update model parameters if needed
           (finalModel, finalGrad, finalOptim) <-
             if (iter + 1) `mod` C.gradientAccumulationStep == 0 then do
               let lr = getLearningRate (iter + 1 + (nbBatch * currentEpoch-1)) ((nbBatch `div` C.gradientAccumulationStep) * nbEpoch)
@@ -60,43 +62,70 @@ processEpochLazy model dataloader optimizer nbBatch nbEpoch currentEpoch = do
             else
               pure (currentModel, newGrads, currentOptim)
 
+          -- evaluate the model and get validation loss if available
+          (validLossMaybe, validDlUpdated) <- case validDl of
+            Nothing -> pure (Nothing, Nothing)
+            Just validDl' -> do
+              (validLoss,validAcc, validDl'') <- processTest finalModel validDl'
+              pure (Just validLoss, Just validDl'')
+
+          -- print progress with validation loss if available
           when ((iter + 1) `mod` C.printFreq == 0) $
-            putStrLn $
+            putStrLn $ 
+              "Epoch: " ++ show currentEpoch 
+              ++ "/" ++ show nbEpoch
+              ++ ", Iteration: " ++
               show (iter + 1) ++ "/"
               ++ show nbBatch
               ++ ", Loss: " ++ show loss
+              ++ ", Accuracy: " ++ show acc
+              ++ case validLossMaybe of
+                   Nothing -> ""
+                   Just vLoss -> ", Validation Loss: " ++ show vLoss
 
           when ((iter + 1) `mod` C.saveFreq == 0) $ do
             let modelPath = getModelPath C.modelName C.modelDir 0 (iter + 1)
             saveModel modelPath finalModel True
 
-          loop finalModel dl' finalOptim finalGrad (iter + 1)
+          loop finalModel trainDl' validDlUpdated finalOptim finalGrad (iter + 1)
 
-  loop model dataloader optimizer (Gradients []) 0
+  loop model trainDataloader validDataloader optimizer (Gradients []) 0
 
 
 
-processTraining :: (Optimizer opt) => Model -> LazyDataloader -> opt -> Int ->  IO Model
-processTraining model dataloader optimizer nbEpoch = do 
-  totalBatches <- countBatches dataloader
+processTraining :: (Optimizer opt) => Model -> LazyDataloader -> Maybe LazyDataloader -> opt -> Int -> IO Model
+processTraining model trainDataloader initialValidDataloader optimizer nbEpoch = do 
+  totalBatches <- countBatches trainDataloader
   putStrLn $ "Total batches: " ++ show totalBatches
   
-  finalModel <- foldM 
-    (\currentModel epoch -> do
+  (finalModel, _finalValidDlState) <- foldM 
+    (\(currentEpochModel, currentEpochValidDl) epoch -> do -- Correctly destructure accumulator
       putStrLn $ "Starting epoch " ++ show epoch ++ "/" ++ show nbEpoch
       
-      dl <- if epoch > 1 
-            then resetDataloader dataloader
-            else pure dataloader
+      resetTrainDl <- if epoch > 1 
+            then resetDataloader trainDataloader
+            else pure trainDataloader
         
-      newModel <- processEpochLazy currentModel dl optimizer totalBatches nbEpoch epoch 
+      -- Pass the accumulator's validDl and get the new state from processEpochLazy
+      (newModelFromEpoch, newValidDlFromEpoch) <- processEpochLazy currentEpochModel resetTrainDl currentEpochValidDl optimizer totalBatches nbEpoch epoch 
       
-      pure newModel
+      pure (newModelFromEpoch, newValidDlFromEpoch) -- Return the new state for the accumulator
     ) 
-    model 
-    [1..nbEpoch]
+    (model, initialValidDataloader) -- Use initialValidDataloader for the initial state
+    [1..nbEpoch] 
   putStrLn "Training completed."
   pure finalModel
+
+processTest :: Model -> LazyDataloader -> IO (Tensor,Tensor, LazyDataloader)
+processTest model validDl = do
+  mb <- getNextBatch validDl
+  case mb of
+    Nothing -> do 
+      newDl <- resetDataloader validDl
+      processTest model newDl
+    Just (validBatch, validDl') -> do
+      let (validOutput, validLoss,validAcc) = processBatch model validBatch
+      pure (validLoss,validAcc, validDl')
   
 accumulateGradients :: Gradients -> Gradients -> Gradients
 accumulateGradients (Gradients currentGradTensor) (Gradients newGradTensor) = Gradients $ zipWith (+) currentGradTensor newGradTensor
