@@ -1,6 +1,7 @@
 module Train.Training where
 
-import Torch hiding( cos,floor,div)
+
+import Torch hiding(cos,floor,div)
 import Model.GPT
 import Data.Dataloader (DataLoader, Batch)
 import qualified Torch.Functional as F
@@ -77,11 +78,11 @@ processEpochLazy model trainDataloader validDataloader optimizer nbBatch nbEpoch
               ++ ", Iteration: " ++
               show (iter + 1) ++ "/"
               ++ show nbBatch
-              ++ ", Loss: " ++ show loss
-              ++ ", Accuracy: " ++ show acc
+              ++ ", Loss: " ++ show (asValue loss :: Float)
+              ++ ", Accuracy: " ++ show (asValue acc :: Float)
               ++ case validLossMaybe of
                    Nothing -> ""
-                   Just vLoss -> ", Validation Loss: " ++ show vLoss
+                   Just vLoss -> ", Validation Loss: " ++ show (asValue vLoss :: Float)
 
           when ((iter + 1) `mod` C.saveFreq == 0) $ do
             let modelPath = getModelPath C.modelName C.modelDir 0 (iter + 1)
@@ -126,7 +127,8 @@ processTest model validDl = do
     Just (validBatch, validDl') -> do
       let (validOutput, validLoss,validAcc) = processBatch model validBatch
       pure (validLoss,validAcc, validDl')
-  
+
+
 accumulateGradients :: Gradients -> Gradients -> Gradients
 accumulateGradients (Gradients currentGradTensor) (Gradients newGradTensor) = Gradients $ zipWith (+) currentGradTensor newGradTensor
 
