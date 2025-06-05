@@ -153,7 +153,8 @@ processTraining
   -> IO (Model, TrainingTracker)
 processTraining model trainDataloader initialValidDataloader optimizer nbEpoch mTracker = do
 
-  let tracker0 = fromMaybe initialTrainingTracker mTracker
+  let c = ModelConfig (nEmbd model) (nBlock model) (vocabSize model) (nHead model) (blockSize model) 
+  let tracker0 = fromMaybe (initialTrainingTracker c) mTracker
 
   (finalModel, _validDl, finalTracker) <- foldM
     (\(curModel, curValidDl, curTracker) epoch -> do

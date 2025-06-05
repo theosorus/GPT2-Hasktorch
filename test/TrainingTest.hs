@@ -104,7 +104,7 @@ testProcessEpochLazy = do
         let optimizer = mkAdam 0 0.9 0.999 (flattenParameters model)
 
         -- model dataloader optimizer nbBatch nbEpoch currentEpoch
-        (finalModel,_,_) <- processEpochLazy model dl Nothing optimizer 1 1 initialTrainingTracker
+        (finalModel,_,_) <- processEpochLazy model dl Nothing optimizer 1 1 (initialTrainingTracker config)
 
         finalModel `shouldSatisfy` (const True :: Model -> Bool)
 
