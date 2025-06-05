@@ -5,6 +5,8 @@ import GHC.Generics         (Generic)
 import Data.Aeson          (ToJSON, FromJSON, encode, decode)
 import qualified Data.ByteString.Lazy as BL
 
+import Model.GPT
+
 data TrainingTracker = TrainingTracker
   { currentEpoch :: Int
   , currentBatch :: Int
@@ -13,11 +15,12 @@ data TrainingTracker = TrainingTracker
   , trainAccuracy :: [Float]
   , validAccuracy :: [Float]
   , lastModelPath :: String
+  , modelConf :: ModelConfig
   } deriving (Eq,Generic)
 
 
-initialTrainingTracker :: TrainingTracker
-initialTrainingTracker = TrainingTracker
+initialTrainingTracker :: ModelConfig -> TrainingTracker
+initialTrainingTracker config = TrainingTracker
   { currentEpoch = 0
   , currentBatch = 0
   , trainLoss = []
@@ -25,6 +28,7 @@ initialTrainingTracker = TrainingTracker
   , trainAccuracy = []
   , validAccuracy = []
   , lastModelPath = ""
+  , modelConf = config
   }
 
 instance Show TrainingTracker where
@@ -50,6 +54,17 @@ loadTrainingTracker :: FilePath -> IO (Maybe TrainingTracker)
 loadTrainingTracker path = do
   content <- BL.readFile path
   return (decode content)
+
+
+-- loadModelFromTracker :: FilePath -> IO (Maybe TrainingTracker)
+-- loadModelFromTracker path = do
+--   tracker <- loadTrainingTracker path
+--   case tracker of
+--     Just t  -> do
+--       let modelPath = lastModelPath t
+--     Nothing -> do
+--       putStrLn $ "Failed to load training tracker from " ++ path
+--       return Nothing
 
 
 

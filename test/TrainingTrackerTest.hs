@@ -3,6 +3,8 @@ module TrainingTrackerTest where
 import Train.TrainingTracker
 import System.Directory (removeFile)
 
+import Model.GPT (ModelConfig(ModelConfig))
+
 
 
 import Test.Hspec
@@ -19,6 +21,7 @@ trainingTrackerSaveAndLoad = do
     , trainAccuracy = []
     , validAccuracy = [0.8, 0.85, 0.9]
     , lastModelPath = "Hello"
+    , modelConf = ModelConfig 128 2 30000 2 128
   }
     let filePath = "training_tracker_test.json"
         
