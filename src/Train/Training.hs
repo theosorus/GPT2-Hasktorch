@@ -100,19 +100,18 @@ processTraining model trainDataloader initialValidDataloader optimizer nbEpoch =
   putStrLn $ "Total batches: " ++ show totalBatches
   
   (finalModel, _finalValidDlState) <- foldM 
-    (\(currentEpochModel, currentEpochValidDl) epoch -> do -- Correctly destructure accumulator
+    (\(currentEpochModel, currentEpochValidDl) epoch -> do
       putStrLn $ "Starting epoch " ++ show epoch ++ "/" ++ show nbEpoch
       
       resetTrainDl <- if epoch > 1 
             then resetDataloader trainDataloader
             else pure trainDataloader
         
-      -- Pass the accumulator's validDl and get the new state from processEpochLazy
       (newModelFromEpoch, newValidDlFromEpoch) <- processEpochLazy currentEpochModel resetTrainDl currentEpochValidDl optimizer totalBatches nbEpoch epoch 
       
-      pure (newModelFromEpoch, newValidDlFromEpoch) -- Return the new state for the accumulator
+      pure (newModelFromEpoch, newValidDlFromEpoch) 
     ) 
-    (model, initialValidDataloader) -- Use initialValidDataloader for the initial state
+    (model, initialValidDataloader)
     [1..nbEpoch] 
   putStrLn "Training completed."
   pure finalModel
