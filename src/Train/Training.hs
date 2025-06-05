@@ -58,12 +58,13 @@ processEpochLazy
   -> IO (Model, Maybe LazyDataloader, TrainingTracker)
 processEpochLazy model trainDataloader validDataloader optimizer nbEpoch epochNum initTracker = do
   let
-    loop currentModel trainDl validDl currentOptim currentGrad iter curTracker = do
+    loop currentModel trainDl validDl currentOptim currentGrad curTracker = do
       mb <- getNextBatch trainDl
       case mb of
         Nothing -> pure (currentModel, validDl, curTracker)
         Just (trainBatch, trainDl') -> do
 
+          let currentIteration = currentBatch curTracker + 1
 
           -- on run le forward
           let (output, loss, acc) = processBatch currentModel trainBatch
@@ -72,7 +73,7 @@ processEpochLazy model trainDataloader validDataloader optimizer nbEpoch epochNu
           -- on met à jour le tracker pour le train
           let curTracker1 = curTracker
                 { currentEpoch     = epochNum  -- Use the parameter instead of the field name
-                , currentBatch     = iter + 1
+                , currentBatch     = currentIteration
                 , trainLoss        = trainLoss curTracker ++ [asValue loss :: Float]
                 , trainAccuracy    = trainAccuracy curTracker ++ [asValue acc :: Float]
                 }
@@ -86,8 +87,8 @@ processEpochLazy model trainDataloader validDataloader optimizer nbEpoch epochNu
 
           -- apply/update step si nécessaire
           (finalModel, finalGrad, finalOptim) <- 
-            if (iter + 1) `mod` C.gradientAccumulationStep == 0 then do
-              let lr = getLearningRate (iter + 1 + ((totalBatches trainDl) * epochNum - 1))
+            if (currentIteration) `mod` C.gradientAccumulationStep == 0 then do
+              let lr = getLearningRate (currentIteration + ((totalBatches trainDl) * epochNum - 1))
                                        ((totalBatches trainDl `div` C.gradientAccumulationStep) * nbEpoch)
               (updM, optS) <- runStep' currentModel currentOptim newGrads (realToFrac lr)
               pure (updM, Gradients [], optS)
@@ -96,42 +97,50 @@ processEpochLazy model trainDataloader validDataloader optimizer nbEpoch epochNu
 
 
           -- évaluation validation si existante
-          (validLossMaybe, validDlUpdated, curTracker2) <- case validDl of
-            Nothing -> pure (Nothing, Nothing, curTracker1)
+          (validLossMaybe,accLossMaybe, validDlUpdated, curTracker2) <- case validDl of
+            Nothing -> pure (Nothing, Nothing,Nothing, curTracker1)
             Just vdl -> do
               (vLoss, vAcc, vdl'') <- processTest finalModel vdl
               let t' = curTracker1
-                    { validLoss     = validLoss t' ++ [asValue vLoss :: Float]
-                    , validAccuracy = validAccuracy t' ++ [asValue vAcc :: Float]
-                    }
-              pure (Just vLoss, Just vdl'', t')
+                      { validLoss     = validLoss curTracker1 ++ [asValue vLoss :: Float]
+                      , validAccuracy = validAccuracy curTracker1 ++ [asValue vAcc :: Float]
+                      }
+              pure (Just vLoss,Just vAcc, Just vdl'', t')
 
 
           -- affichage & save inchangés...
-          when ((iter + 1) `mod` C.printFreq == 0) $
+          when ((currentIteration) `mod` C.printFreq == 0) $
             putStrLn $ 
               "Epoch: " ++ show epochNum
               ++ "/" ++ show nbEpoch
-              ++ ", Iteration: " ++
-              show (iter + 1) ++ "/"
+              ++ ", Iter : " ++
+              show (currentIteration) ++ "/"
               ++ show (totalBatches trainDl')
-              ++ ", Loss: " ++ show (asValue loss :: Float)
-              ++ ", Accuracy: " ++ show (asValue acc :: Float)
+              ++ ", train_loss: " ++ show (asValue loss :: Float)
+              ++ ", train_acc: " ++ show (asValue acc :: Float)
               ++ case validLossMaybe of
                    Nothing -> ""
-                   Just vLoss -> ", Validation Loss: " ++ show (asValue vLoss :: Float)
+                   Just vLoss -> ", valid_loss: " ++ show (asValue vLoss :: Float)
+              ++ case accLossMaybe of
+                   Nothing -> ""
+                   Just vAcc -> ", valid_acc: " ++ show (asValue vAcc :: Float)
 
 
 
-          when ((iter + 1) `mod` C.saveFreq == 0) $ do
-            let modelPath = getModelPath C.modelName C.modelDir 0 (iter + 1)
+
+          when ((currentIteration) `mod` C.saveFreq == 0) $ do
+            let modelPath = getModelPath C.modelName C.modelDir (epochNum) (currentIteration)
+
             saveModel modelPath finalModel True
+            putStrLn "Model saved successfully, now saving tracker..."
+            saveTrainingTracker C.trainingTrackerPath curTracker2
+            putStrLn "Tracker saved successfully."
           
 
           
-          loop finalModel trainDl' validDlUpdated finalOptim finalGrad (iter + 1) curTracker2
+          loop finalModel trainDl' validDlUpdated finalOptim finalGrad curTracker2
 
-  loop model trainDataloader validDataloader optimizer (Gradients []) 0 initTracker
+  loop model trainDataloader validDataloader optimizer (Gradients []) initTracker
 
 processTraining 
   :: (Optimizer opt)
@@ -149,8 +158,10 @@ processTraining model trainDataloader initialValidDataloader optimizer nbEpoch m
   (finalModel, _validDl, finalTracker) <- foldM
     (\(curModel, curValidDl, curTracker) epoch -> do
        putStrLn $ "Starting epoch " ++ show epoch ++ "/" ++ show nbEpoch
+
        resetTrainDl <- if epoch > 1 then resetDataloader trainDataloader else pure trainDataloader
-       processEpochLazy curModel resetTrainDl curValidDl optimizer nbEpoch epoch curTracker
+       let resetTracker = if epoch > 1 then curTracker { currentBatch = 0 } else curTracker
+       processEpochLazy curModel resetTrainDl curValidDl optimizer nbEpoch epoch resetTracker
     )
     (model, initialValidDataloader, tracker0)
     [1..nbEpoch]
