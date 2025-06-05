@@ -59,7 +59,7 @@ testSizeBatch= do
             bbs = 2048    
             batchSize = 2
             seqLen = 16
-        dl <- initLazyDataloader testFilePath bbs batchSize seqLen wti vs
+        dl <- internalInitLazyDataloader testFilePath bbs batchSize seqLen wti vs
         
         batch <- getNextBatch dl
         case batch of
@@ -86,7 +86,7 @@ testResetLazyDataloader = do
             bbs = 2048    
             batchSize = 2
             seqLen = 64    
-        dl <- initLazyDataloader testFilePath bbs batchSize seqLen wti vs
+        dl <- internalInitLazyDataloader testFilePath bbs batchSize seqLen wti vs
         
         Just (x1, dl2) <- getNextBlock dl
         resetDL2 <- resetDataloader dl2
