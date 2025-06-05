@@ -20,21 +20,23 @@ import Data.Preprocess (preprocess)
 type Batch = (Tensor, Tensor)
 
 data LazyDataloader = LazyDataloader
-    { filePath       :: FilePath  ,
-      wordToIndex    :: B.ByteString -> Int
+    { filePath       :: FilePath
+    , wordToIndex    :: B.ByteString -> Int
     , vocabSize      :: Int
     , currentIndex   :: Int
     , tokenBlockSize :: Int
-    , batchSize     :: Int
+    , batchSize      :: Int
     , seqLen         :: Int
     , byteBlockSize  :: Int
     , handle         :: Handle
     , tokenBuffer    :: [Int]
+    , totalBatches   :: Int      
+    , currentBatch   :: Int      
     } deriving (Generic)
 
 countBatches :: LazyDataloader -> IO Int
 countBatches dl = do
-  dl' <- initLazyDataloader
+  dl' <- internalInitLazyDataloader
            (filePath dl)
            (byteBlockSize dl)
            (batchSize dl)
@@ -67,7 +69,9 @@ getNextBatch dl = do
     Just (batch, dl') ->
       let bs = batchSize dl'
           sl = seqLen    dl'
-      in return (Just (createBatch batch bs sl, dl'))
+          dl'' = dl'
+            { currentBatch = currentBatch dl' + 1 }
+      in return (Just (createBatch batch bs sl, dl''))
     Nothing ->
       return Nothing
 
@@ -82,20 +86,42 @@ initLazyDataloader ::
   Int ->
   IO LazyDataloader
 initLazyDataloader path bbs bs sq wti vs = do
+  dl0 <- internalInitLazyDataloader path bbs bs sq wti vs
+  n <- countBatches dl0
+  return $ dl0 { totalBatches = n }
+
+
+
+internalInitLazyDataloader ::
+  FilePath ->
+  Int ->    -- byteBlockSize
+  Int ->    -- batchSize
+  Int ->    -- seqLen
+  (B.ByteString -> Int) ->
+  Int ->
+  IO LazyDataloader
+internalInitLazyDataloader path bbs bs sq wti vs = do
   h <- openFile path ReadMode
   hSetBinaryMode h True
-  return LazyDataloader
-    { filePath       = path                
-    , wordToIndex    = wti
-    , vocabSize      = vs
-    , currentIndex   = 0
-    , byteBlockSize  = bbs
-    , batchSize      = bs
-    , seqLen         = sq
-    , tokenBlockSize = (bs * sq) + bs
-    , handle         = h
-    , tokenBuffer    = []
-    }
+
+  let dl0 = LazyDataloader
+        { filePath       = path
+        , wordToIndex    = wti
+        , vocabSize      = vs
+        , currentIndex   = 0
+        , byteBlockSize  = bbs
+        , batchSize      = bs
+        , seqLen         = sq
+        , tokenBlockSize = (bs * sq) + bs
+        , handle         = h
+        , tokenBuffer    = []
+        , totalBatches   = 0
+        , currentBatch   = 0
+        }
+  return dl0 
+
+
+
 
 
 resetDataloader :: LazyDataloader -> IO LazyDataloader
@@ -103,11 +129,12 @@ resetDataloader dl@LazyDataloader{..} = do
     hClose handle
     h <- openFile filePath ReadMode
     hSetBinaryMode h True
-    return dl { 
-        handle = h,
-        currentIndex = 0,
-        tokenBuffer = []
-    }
+    return dl
+      { handle       = h
+      , currentIndex = 0
+      , tokenBuffer  = []
+      , currentBatch = 0  
+      }
 
 
 fillBuffer :: LazyDataloader -> IO LazyDataloader
