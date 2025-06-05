@@ -108,7 +108,6 @@ processEpochLazy model trainDataloader validDataloader optimizer nbEpoch epochNu
               pure (Just vLoss,Just vAcc, Just vdl'', t')
 
 
-          -- affichage & save inchangés...
           when ((currentIteration) `mod` C.printFreq == 0) $
             putStrLn $ 
               "Epoch: " ++ show epochNum
@@ -126,19 +125,18 @@ processEpochLazy model trainDataloader validDataloader optimizer nbEpoch epochNu
                    Just vAcc -> ", valid_acc: " ++ show (asValue vAcc :: Float)
 
 
+          let
+            condSave      = (currentIteration `mod` C.saveFreq) == 0
+            modelPath     = getModelPath C.modelName C.modelDir epochNum currentIteration
+            updatedTracker
+              | condSave  = curTracker2 { lastModelPath = modelPath }
+              | otherwise = curTracker2
 
-
-          when ((currentIteration) `mod` C.saveFreq == 0) $ do
-            let modelPath = getModelPath C.modelName C.modelDir (epochNum) (currentIteration)
-
+          when condSave $ do
             saveModel modelPath finalModel True
-            putStrLn "Model saved successfully, now saving tracker..."
-            saveTrainingTracker C.trainingTrackerPath curTracker2
-            putStrLn "Tracker saved successfully."
-          
+            saveTrainingTracker C.trainingTrackerPath updatedTracker
 
-          
-          loop finalModel trainDl' validDlUpdated finalOptim finalGrad curTracker2
+          loop finalModel trainDl' validDlUpdated finalOptim finalGrad updatedTracker
 
   loop model trainDataloader validDataloader optimizer (Gradients []) initTracker
 

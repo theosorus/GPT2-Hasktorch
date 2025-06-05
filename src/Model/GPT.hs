@@ -109,7 +109,7 @@ computeAccuracy predictions targets =
 
         
 
--- cross_entropy_lossSource
+-- cross_entropy_loss
 -- :: Tensor	self
 -- -> Tensor	target
 -- -> Tensor	weight
