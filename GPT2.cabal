@@ -90,6 +90,7 @@ test-suite GPT2-test
       ModelTest
       SaveTest
       TrainingTest
+      TrainingTrackerTest
       Paths_GPT2
   autogen-modules:
       Paths_GPT2

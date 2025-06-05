@@ -10,6 +10,7 @@ import Data.Dataloader
 import Data.LazyDataloader
 import Data.File (loadWordsJson)
 import Data.Preprocess (wordToIndexFactory)
+import Train.TrainingTracker (initialTrainingTracker)
 
 
 testProcessBatch :: Spec
@@ -103,7 +104,7 @@ testProcessEpochLazy = do
         let optimizer = mkAdam 0 0.9 0.999 (flattenParameters model)
 
         -- model dataloader optimizer nbBatch nbEpoch currentEpoch
-        (finalModel,_) <- processEpochLazy model dl Nothing optimizer nbBatch 1 1
+        (finalModel,_,_) <- processEpochLazy model dl Nothing optimizer 1 1 initialTrainingTracker
 
         finalModel `shouldSatisfy` (const True :: Model -> Bool)
 
@@ -139,7 +140,7 @@ testProcessTraining = do
         let optimizer = mkAdam 0 0.9 0.999 (flattenParameters model)
 
 
-        finalModel <- processTraining model dl Nothing optimizer 3
+        (finalModel,finalTracker) <- processTraining model dl Nothing optimizer 3 Nothing
 
         finalModel `shouldSatisfy` (const True :: Model -> Bool)
 
@@ -177,9 +178,10 @@ testProcessTrainingWithValid = do
         let optimizer = mkAdam 0 0.9 0.999 (flattenParameters model)
 
 
-        finalModel <- processTraining model trainDl (Just validDl) optimizer 3
+        (finalModel,finalTracker) <- processTraining model trainDl (Just validDl) optimizer 3 Nothing
 
         finalModel `shouldSatisfy` (const True :: Model -> Bool)
+        --putStrLn $ "Final Tracker: " ++ show finalTracker
 
 
 

@@ -8,6 +8,7 @@ import TrainingTest
 import FileTest
 import SaveTest
 import LazyDataloaderTest
+import TrainingTrackerTest
 
 --shape output `shouldBe` [batchSize, seqLen, configNEmbd config]
 
@@ -58,5 +59,8 @@ main = hspec $ do
     testSizeBlock
     testSizeBatch
     testResetLazyDataloader
+
+    -- TRAINING TRACKER
+    trainingTrackerSaveAndLoad
     
     
