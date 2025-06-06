@@ -6,6 +6,7 @@ import Data.Aeson          (ToJSON, FromJSON, encode, decode)
 import qualified Data.ByteString.Lazy as BL
 
 import Model.GPT
+import Model.Save (loadModel)
 
 data TrainingTracker = TrainingTracker
   { currentEpoch :: Int
@@ -56,15 +57,22 @@ loadTrainingTracker path = do
   return (decode content)
 
 
--- loadModelFromTracker :: FilePath -> IO (Maybe TrainingTracker)
--- loadModelFromTracker path = do
---   tracker <- loadTrainingTracker path
---   case tracker of
---     Just t  -> do
---       let modelPath = lastModelPath t
---     Nothing -> do
---       putStrLn $ "Failed to load training tracker from " ++ path
---       return Nothing
+
+loadTrainingTrackerAndModel :: FilePath -> IO (Maybe (TrainingTracker, Model))
+loadTrainingTrackerAndModel path = do
+  tracker <- loadTrainingTracker path
+  case tracker of
+    Just t  -> do
+      let modelPath = lastModelPath t
+          config = modelConf t
+      loadedModel <- loadModel modelPath config
+      return (Just (t, loadedModel))
+    Nothing -> do
+      putStrLn $ "Failed to load training tracker from " ++ path
+      return Nothing
+  
+
+
 
 
 
