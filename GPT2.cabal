@@ -54,6 +54,7 @@ library
     , bytestring
     , containers
     , hasktorch
+    , nlp-tools
     , split
     , text
     , utf8-string
@@ -75,6 +76,7 @@ executable GPT2-exe
     , bytestring
     , containers
     , hasktorch
+    , nlp-tools
     , split
     , text
     , utf8-string
@@ -90,6 +92,7 @@ test-suite GPT2-test
       ModelTest
       SaveTest
       TrainingTest
+      TrainingTrackerTest
       Paths_GPT2
   autogen-modules:
       Paths_GPT2
@@ -106,6 +109,7 @@ test-suite GPT2-test
     , directory
     , hasktorch
     , hspec
+    , nlp-tools
     , split
     , text
     , utf8-string

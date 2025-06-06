@@ -19,6 +19,9 @@ modelDir = "models"
 modelName :: String
 modelName = "gpt"
 
+trainingTrackerPath :: String
+trainingTrackerPath = "training_tracker.json"
+
 -- Device Configuration
 modelDevice :: Device
 modelDevice = Device CPU 0
@@ -49,7 +52,7 @@ epochs = 2
 
 
 saveFreq :: Int
-saveFreq = 20
+saveFreq = 10
 
 printFreq :: Int
 printFreq = 2

@@ -10,6 +10,7 @@ import Data.Dataloader
 import Data.LazyDataloader
 import Data.File (loadWordsJson)
 import Data.Preprocess (wordToIndexFactory)
+import Train.TrainingTracker (initialTrainingTracker)
 
 
 testProcessBatch :: Spec
@@ -28,9 +29,10 @@ testProcessBatch = do
         x <- randInt [batchSize, seqLen] 0 (vocabSize - 1)
         y <- randInt [batchSize, seqLen] 0 (vocabSize - 1)
         let input = (x, y)
-        let (output,loss) = processBatch model input
+        let (output,loss,acc) = processBatch model input
         shape output `shouldBe` [batchSize, seqLen, vocabSize]
         shape loss `shouldBe` [] -- scalar
+        shape acc `shouldBe` [] -- scalar
 
 
 
@@ -102,7 +104,7 @@ testProcessEpochLazy = do
         let optimizer = mkAdam 0 0.9 0.999 (flattenParameters model)
 
         -- model dataloader optimizer nbBatch nbEpoch currentEpoch
-        finalModel <- processEpochLazy model dl optimizer nbBatch 1 1
+        (finalModel,_,_) <- processEpochLazy model dl Nothing optimizer 1 1 (initialTrainingTracker config)
 
         finalModel `shouldSatisfy` (const True :: Model -> Bool)
 
@@ -138,9 +140,48 @@ testProcessTraining = do
         let optimizer = mkAdam 0 0.9 0.999 (flattenParameters model)
 
 
-        finalModel <- processTraining model dl optimizer 2
+        (finalModel,finalTracker) <- processTraining model dl Nothing optimizer 3 Nothing
 
         finalModel `shouldSatisfy` (const True :: Model -> Bool)
+
+
+
+testProcessTrainingWithValid :: Spec
+testProcessTrainingWithValid = do
+    let batchSize = 1
+        seqLen = 64
+        embdDim = 256
+        nHead = 8
+        blockSize = seqLen
+        nBlock = 2
+        lr = 0.001
+        gradientAccumulationStep = 2
+        testFilePath = "data/tests/small_text.txt"
+        vocabTestPath = "data/tests/vocab_test.json"
+        bbs = 16384 --byte block size
+        
+        -- configNEmbd configNBlock configVocabSize configNHead configBlockSize 
+        
+
+    it "processTraining must return newModel output on multiple epochs" $ do
+        wordlst <- loadWordsJson vocabTestPath
+        let wti = wordToIndexFactory wordlst
+            vs  = (length wordlst) + 1
+
+        trainDl <- initLazyDataloader testFilePath bbs batchSize seqLen wti vs
+        validDl <- initLazyDataloader testFilePath bbs batchSize seqLen wti vs
+        
+        -- Initialize the model
+        let config = ModelConfig embdDim nBlock vs nHead blockSize
+        model <- modelInit config
+
+        let optimizer = mkAdam 0 0.9 0.999 (flattenParameters model)
+
+
+        (finalModel,finalTracker) <- processTraining model trainDl (Just validDl) optimizer 3 Nothing
+
+        finalModel `shouldSatisfy` (const True :: Model -> Bool)
+        --putStrLn $ "Final Tracker: " ++ show finalTracker
 
 
 

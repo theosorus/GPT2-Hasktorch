@@ -12,6 +12,7 @@ import GHC.Generics
 import Torch
 import qualified Torch.Functional as F
 import qualified Torch.Functional.Internal as FI
+import Data.Aeson          (ToJSON, FromJSON)
 import Torch.NN as NN
 
 import Model.EmbeddingLayer 
@@ -28,7 +29,10 @@ data ModelConfig = ModelConfig
   , configVocabSize :: Int
   , configNHead :: Int
   , configBlockSize :: Int
-  } deriving (Show, Eq)
+  } deriving (Show, Eq,Generic)
+
+instance ToJSON ModelConfig
+instance FromJSON ModelConfig
 
 data Model = Model
   { wte :: EmbeddingLayer,
@@ -53,7 +57,7 @@ instance Show Model where
     ", blockSize = "  ++ show blockSize ++ " }"
 
 modelInit :: ModelConfig -> IO Model
-modelInit ModelConfig{..} = do
+modelInit c@ModelConfig{..} = do
     wte <- embeddingLayerInit (EmbeddingLayerConfig configVocabSize configNEmbd)
     wpe <- embeddingLayerInit (EmbeddingLayerConfig configBlockSize configNEmbd)
 
@@ -105,7 +109,7 @@ computeAccuracy predictions targets =
 
         
 
--- cross_entropy_lossSource
+-- cross_entropy_loss
 -- :: Tensor	self
 -- -> Tensor	target
 -- -> Tensor	weight
