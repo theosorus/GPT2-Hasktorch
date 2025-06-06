@@ -14,6 +14,7 @@ import qualified Config as C
 import Config (modelDevice)
 import Model.Save 
 import Train.TrainingTracker
+import ML.Exp.Chart   (drawLearningCurve)
 
 
 
@@ -46,16 +47,6 @@ trainBatch model batch optimizer lr = do
 
 
 
-processEpochLazy 
-  :: (Optimizer opt)
-  => Model
-  -> LazyDataloader
-  -> Maybe LazyDataloader
-  -> opt
-  -> Int        -- ^ nbEpoch
-  -> Int        -- ^ currentEpoch
-  -> TrainingTracker
-  -> IO (Model, Maybe LazyDataloader, TrainingTracker)
 processEpochLazy model trainDataloader validDataloader optimizer nbEpoch epochNum initTracker = do
   let
     loop currentModel trainDl validDl currentOptim currentGrad curTracker = do
@@ -65,27 +56,14 @@ processEpochLazy model trainDataloader validDataloader optimizer nbEpoch epochNu
         Just (trainBatch, trainDl') -> do
 
           let currentIteration = currentBatch curTracker + 1
+          let (_output, loss, acc) = processBatch currentModel trainBatch
 
-          -- on run le forward
-          let (output, loss, acc) = processBatch currentModel trainBatch
-
-
-          -- on met à jour le tracker pour le train
-          let curTracker1 = curTracker
-                { currentEpoch     = epochNum  -- Use the parameter instead of the field name
-                , currentBatch     = currentIteration
-                , trainLoss        = trainLoss curTracker ++ [asValue loss :: Float]
-                , trainAccuracy    = trainAccuracy curTracker ++ [asValue acc :: Float]
-                }
-
-
-          -- accumulation des gradients
+          -- accumulation des gradients & update step…
           newGrads <- if isEmptyGradients currentGrad
                       then pure $ grad' loss $ flattenParameters currentModel
                       else pure $ accumulateGradients currentGrad (grad' loss $ flattenParameters currentModel)
 
-
-          -- apply/update step si nécessaire
+          -- update model if enough gradients accumulated
           (finalModel, finalGrad, finalOptim) <- 
             if (currentIteration) `mod` C.gradientAccumulationStep == 0 then do
               let lr = getLearningRate (currentIteration + ((totalBatches trainDl) * epochNum - 1))
@@ -95,50 +73,106 @@ processEpochLazy model trainDataloader validDataloader optimizer nbEpoch epochNu
             else
               pure (currentModel, newGrads, currentOptim)
 
-
-          -- évaluation validation si existante
-          (validLossMaybe,accLossMaybe, validDlUpdated, curTracker2) <- case validDl of
-            Nothing -> pure (Nothing, Nothing,Nothing, curTracker1)
+          -- validation
+          (validLossMaybe, validAccMaybe, validDlUpdated) <- case validDl of
+            Nothing  -> pure (Nothing, Nothing, Nothing)
             Just vdl -> do
               (vLoss, vAcc, vdl'') <- processTest finalModel vdl
-              let t' = curTracker1
-                      { validLoss     = validLoss curTracker1 ++ [asValue vLoss :: Float]
-                      , validAccuracy = validAccuracy curTracker1 ++ [asValue vAcc :: Float]
-                      }
-              pure (Just vLoss,Just vAcc, Just vdl'', t')
+              pure (Just vLoss, Just vAcc, Just vdl'')
 
-
-          when ((currentIteration) `mod` C.printFreq == 0) $
-            putStrLn $ 
-              "Epoch: " ++ show epochNum
-              ++ "/" ++ show nbEpoch
-              ++ ", Iter : " ++
-              show (currentIteration) ++ "/"
-              ++ show (totalBatches trainDl')
-              ++ ", train_loss: " ++ show (asValue loss :: Float)
-              ++ ", train_acc: " ++ show (asValue acc :: Float)
-              ++ case validLossMaybe of
-                   Nothing -> ""
-                   Just vLoss -> ", valid_loss: " ++ show (asValue vLoss :: Float)
-              ++ case accLossMaybe of
-                   Nothing -> ""
-                   Just vAcc -> ", valid_acc: " ++ show (asValue vAcc :: Float)
-
+          
 
           let
-            condSave      = (currentIteration `mod` C.saveFreq) == 0
-            modelPath     = getModelPath C.modelName C.modelDir epochNum currentIteration
-            updatedTracker
-              | condSave  = curTracker2 { lastModelPath = modelPath }
-              | otherwise = curTracker2
+            condSave  = currentIteration `mod` C.saveFreq == 0
+            modelPath = if condSave
+                        then Just (getModelPath C.modelName C.modelDir epochNum currentIteration)
+                        else Nothing
+            updatedTracker = updateTracker curTracker epochNum currentIteration loss acc validLossMaybe validAccMaybe modelPath
 
+          -- affichage
+          when (currentIteration `mod` C.printFreq == 0) $ do
+            printTrainingInfo
+              epochNum
+              nbEpoch
+              currentIteration
+              (totalBatches trainDl')
+              loss
+              acc
+              validLossMaybe
+              validAccMaybe
+            drawCurvesFromTracker updatedTracker
+
+          -- sauvegarde
           when condSave $ do
-            saveModel modelPath finalModel True
+            let Just path = modelPath
+            saveModel path finalModel True
             saveTrainingTracker C.trainingTrackerPath updatedTracker
 
           loop finalModel trainDl' validDlUpdated finalOptim finalGrad updatedTracker
-
   loop model trainDataloader validDataloader optimizer (Gradients []) initTracker
+
+
+
+printTrainingInfo :: Int -> Int -> Int -> Int        
+                  -> Tensor     
+                  -> Tensor     
+                  -> Maybe Tensor  
+                  -> Maybe Tensor  
+                  -> IO ()
+printTrainingInfo epochNum nbEpoch currentIteration totalIter trainLoss trainAcc validLossMaybe validAccMaybe = 
+  putStrLn $ 
+    "Epoch: " ++ show epochNum
+    ++ "/" ++ show nbEpoch
+    ++ ", Iter : " ++
+    show currentIteration ++ "/"
+    ++ show totalIter
+    ++ ", train_loss: " ++ show (asValue trainLoss :: Float)
+    ++ ", train_acc: " ++ show (asValue trainAcc :: Float)
+    ++ case validLossMaybe of
+         Nothing -> ""
+         Just vLoss -> ", valid_loss: " ++ show (asValue vLoss :: Float)
+    ++ case validAccMaybe of
+         Nothing -> ""
+         Just vAcc -> ", valid_acc: " ++ show (asValue vAcc :: Float)
+
+
+
+drawCurvesFromTracker :: TrainingTracker -> IO ()
+drawCurvesFromTracker tracker = do
+  let tLoss = trainLoss tracker
+      vLoss = validLoss tracker
+      tAcc  = trainAccuracy tracker
+      vAcc  = validAccuracy tracker
+  drawLearningCurve "output/loss.png" "Training Losses"
+    [("Train Loss", tLoss), ("Valid Loss", vLoss)]
+  drawLearningCurve "output/acc.png" "Training Accuracy"
+    [("Train Acc",  tAcc), ("Valid Acc",  vAcc)]
+
+
+
+updateTracker
+  :: TrainingTracker
+  -> Int              -- ^ epochNum
+  -> Int              -- ^ currentIteration
+  -> Tensor           -- ^ trainLossTensor
+  -> Tensor           -- ^ trainAccTensor
+  -> Maybe Tensor     -- ^ validLossMaybe
+  -> Maybe Tensor     -- ^ validAccMaybe
+  -> Maybe FilePath   -- ^ newModelPath (if save)
+  -> TrainingTracker
+updateTracker tracker epochNum currentIteration trainLossTensor trainAccTensor validLossMaybe validAccMaybe mModelPath =
+  tracker
+    { currentEpoch   = epochNum
+    , currentBatch   = currentIteration
+    , trainLoss      = trainLoss tracker ++ [asValue trainLossTensor :: Float]
+    , trainAccuracy  = trainAccuracy tracker ++ [asValue trainAccTensor :: Float]
+    , validLoss      = maybe (validLoss tracker) (\v -> validLoss tracker ++ [asValue v :: Float]) validLossMaybe
+    , validAccuracy  = maybe (validAccuracy tracker) (\a -> validAccuracy tracker ++ [asValue a :: Float]) validAccMaybe
+    , lastModelPath  = fromMaybe (lastModelPath tracker) mModelPath
+    }
+
+
+
 
 processTraining 
   :: (Optimizer opt)

@@ -30,6 +30,7 @@ dependencies:
 - utf8-string
 - aeson
 - text
+- nlp-tools
 
 ghc-options:
 - -Wall
