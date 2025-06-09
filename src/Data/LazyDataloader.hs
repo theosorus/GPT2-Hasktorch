@@ -15,7 +15,10 @@ import qualified Torch.Functional as F
 import GHC.Generics (Generic)
 import Torch (Tensor, asTensor)
 
-import Data.Preprocess (preprocess)  
+import Data.Preprocess (preprocess)
+import Tokenizer.Tokenizer (tokenMain)
+import Config (vocabPath, mergesPath)
+
 
 type Batch = (Tensor, Tensor)
 
@@ -145,9 +148,8 @@ fillBuffer dl@LazyDataloader{..}
       if B.null chunk
         then return dl
         else do
-          let rawTokens    = preprocess chunk
-              mappedTokens = map wordToIndex rawTokens
-              safeTokens   = map (\i -> if i < 0 || i >= vocabSize then 0 else i) mappedTokens
+          tokens <- tokenMain (B.toStrict chunk) vocabPath mergesPath
+          let safeTokens   = map (\i -> if i < 0 || i >= vocabSize then 0 else i) tokens
               dl'          = dl { tokenBuffer = tokenBuffer ++ safeTokens }
           fillBuffer dl'
 

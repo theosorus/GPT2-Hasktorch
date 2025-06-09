@@ -31,6 +31,8 @@ dependencies:
 - aeson
 - text
 - nlp-tools
+- Cabal
+
 
 ghc-options:
 - -Wall
