@@ -33,6 +33,7 @@ dependencies:
 - nlp-tools
 - Cabal
 
+
 ghc-options:
 - -Wall
 - -Wcompat
