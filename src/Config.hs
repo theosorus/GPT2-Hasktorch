@@ -8,7 +8,13 @@ dataDir :: String
 dataDir = "data"
 
 vocabPath :: String
-vocabPath = ""
+vocabPath = "data/tokenizer/vocab.json"
+
+mergesPath :: String
+mergesPath = "data/tokenizer/merges.txt"
+
+byteBlockSize :: Int
+byteBlockSize = 1024 * 1024 * 10 * 10   -- 10 MB
 
 encoding :: String
 encoding = "utf-8"
@@ -24,38 +30,38 @@ trainingTrackerPath = "training_tracker.json"
 
 -- Device Configuration
 modelDevice :: Device
-modelDevice = Device CPU 0
+modelDevice = Device CUDA 0
 
 -- Model Architecture
 vocabSize :: Int
-vocabSize = 30000
+vocabSize =  1  
 
 nBlock :: Int
-nBlock = 2
+nBlock = 1 -- 12
 
 nHead :: Int
-nHead = 2
+nHead = 1 -- 12
 
 nEmbd :: Int
-nEmbd = 128
+nEmbd = 1
 
 blockSize :: Int
-blockSize = 128
+blockSize = 10 -- 1024
 
 
 -- Training Configuration
 batchSize :: Int
-batchSize = 4 
+batchSize =1
 
 epochs :: Int
 epochs = 2
 
 
 saveFreq :: Int
-saveFreq = 10
+saveFreq = 500
 
 printFreq :: Int
-printFreq = 2
+printFreq = 1
 
 -- Optimizer Configuration
 betas :: (Float, Float)
@@ -80,7 +86,7 @@ minLr :: Double
 minLr = maxLr * 0.1
 
 gradientAccumulationStep :: Int
-gradientAccumulationStep = 1
+gradientAccumulationStep = 5
 
 learningRate :: Double
 learningRate = 0.001

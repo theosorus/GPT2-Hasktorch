@@ -9,3 +9,5 @@
 *.pt
 *.txt
 *.json
+*.xml
+*.bz2

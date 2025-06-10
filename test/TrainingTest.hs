@@ -95,7 +95,7 @@ testProcessEpochLazy = do
         let wti = wordToIndexFactory wordlst
             vs  = (length wordlst) + 1
 
-        dl <- initLazyDataloader testFilePath bbs batchSize seqLen wti vs
+        dl <- initLazyDataloader testFilePath bbs batchSize seqLen vs
         nbBatch <- countBatches dl
         -- Initialize the model
         let config = ModelConfig embdDim nBlock vs nHead blockSize
@@ -131,7 +131,7 @@ testProcessTraining = do
         let wti = wordToIndexFactory wordlst
             vs  = (length wordlst) + 1
 
-        dl <- initLazyDataloader testFilePath bbs batchSize seqLen wti vs
+        dl <- initLazyDataloader testFilePath bbs batchSize seqLen vs
         nbBatch <- countBatches dl
         -- Initialize the model
         let config = ModelConfig embdDim nBlock vs nHead blockSize
@@ -168,8 +168,8 @@ testProcessTrainingWithValid = do
         let wti = wordToIndexFactory wordlst
             vs  = (length wordlst) + 1
 
-        trainDl <- initLazyDataloader testFilePath bbs batchSize seqLen wti vs
-        validDl <- initLazyDataloader testFilePath bbs batchSize seqLen wti vs
+        trainDl <- initLazyDataloader testFilePath bbs batchSize seqLen vs
+        validDl <- initLazyDataloader testFilePath bbs batchSize seqLen vs
         
         -- Initialize the model
         let config = ModelConfig embdDim nBlock vs nHead blockSize

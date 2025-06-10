@@ -51,23 +51,19 @@ createCausalMask seqLen =
 
 casualSelfAttentionInit :: CasualSelfAttentionConfig -> IO CasualSelfAttention
 casualSelfAttentionInit CasualSelfAttentionConfig{..} = do
-  
-  -- Check that nEmbd is divisible by nHead
   when (configNEmbd `mod` configNHead /= 0) $
     error "configNEmbd must be divisible by configNHead"
-  
-  -- Initialize linear layers
   cAttn <- sample (LinearSpec configNEmbd (3 * configNEmbd))
   cProj <- sample (LinearSpec configNEmbd configNEmbd)
-
   let attentionBias = createCausalMask configBlockSize
-  return $ CasualSelfAttention
-    { cAttn = cAttn
-    , cProj = cProj
-    , nHead = configNHead
-    , nEmbd = configNEmbd
-    , attentionBias = attentionBias
-    }
+      attn = CasualSelfAttention
+        { cAttn         = cAttn
+        , cProj         = cProj
+        , nHead         = configNHead
+        , nEmbd         = configNEmbd
+        , attentionBias = attentionBias
+        }
+  return (toDevice modelDevice attn)
 
 
 scaledDotProductAttention :: Tensor -> Tensor -> Tensor -> Maybe Tensor -> Maybe Float -> Tensor

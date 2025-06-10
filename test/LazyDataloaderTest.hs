@@ -20,7 +20,7 @@ testCountBatches = do
             bbs = 2048    
             batchSize = 2
             seqLen = 256    
-        dl <- initLazyDataloader testFilePath bbs batchSize seqLen wti vs
+        dl <- initLazyDataloader testFilePath bbs batchSize seqLen vs
         count <- countBatches dl
         count `shouldBe` 1 
 
@@ -36,7 +36,7 @@ testSizeBlock= do
             bbs = 2048    
             batchSize = 2
             seqLen = 64
-        dl <- initLazyDataloader testFilePath bbs batchSize seqLen wti vs
+        dl <- initLazyDataloader testFilePath bbs batchSize seqLen vs
 
         let loopTest d = do
               mb <- getNextBlock d
@@ -50,7 +50,7 @@ testSizeBlock= do
 
 testSizeBatch :: Spec
 testSizeBatch= do 
-    let testFilePath = "data/tests/full_text.txt"
+    let testFilePath = "data/tests/small_text.txt"
         vocabTestPath = "data/tests/vocab_test.json"
     it "All batches in lazy dataloader should have the good size" $ do
         wordlst <- loadWordsJson vocabTestPath
@@ -59,7 +59,7 @@ testSizeBatch= do
             bbs = 2048    
             batchSize = 2
             seqLen = 16
-        dl <- internalInitLazyDataloader testFilePath bbs batchSize seqLen wti vs
+        dl <- internalInitLazyDataloader testFilePath bbs batchSize seqLen vs
         
         batch <- getNextBatch dl
         case batch of
@@ -86,7 +86,7 @@ testResetLazyDataloader = do
             bbs = 2048    
             batchSize = 2
             seqLen = 64    
-        dl <- internalInitLazyDataloader testFilePath bbs batchSize seqLen wti vs
+        dl <- internalInitLazyDataloader testFilePath bbs batchSize seqLen vs
         
         Just (x1, dl2) <- getNextBlock dl
         resetDL2 <- resetDataloader dl2

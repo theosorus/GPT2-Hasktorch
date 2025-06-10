@@ -24,7 +24,6 @@ type Batch = (Tensor, Tensor)
 
 data LazyDataloader = LazyDataloader
     { filePath       :: FilePath
-    , wordToIndex    :: B.ByteString -> Int
     , vocabSize      :: Int
     , currentIndex   :: Int
     , tokenBlockSize :: Int
@@ -44,7 +43,6 @@ countBatches dl = do
            (byteBlockSize dl)
            (batchSize dl)
            (seqLen dl)
-           (wordToIndex dl)
            (vocabSize dl)
   let
     go :: Int -> LazyDataloader -> IO Int
@@ -85,12 +83,12 @@ initLazyDataloader ::
   Int ->    -- byteBlockSize
   Int ->    -- batchSize
   Int ->    -- seqLen
-  (B.ByteString -> Int) ->
   Int ->
   IO LazyDataloader
-initLazyDataloader path bbs bs sq wti vs = do
-  dl0 <- internalInitLazyDataloader path bbs bs sq wti vs
-  n <- countBatches dl0
+initLazyDataloader path bbs bs sq vs = do
+  dl0 <- internalInitLazyDataloader path bbs bs sq vs
+  --n <- countBatches dl0
+  let n = 100000
   return $ dl0 { totalBatches = n }
 
 
@@ -100,16 +98,14 @@ internalInitLazyDataloader ::
   Int ->    -- byteBlockSize
   Int ->    -- batchSize
   Int ->    -- seqLen
-  (B.ByteString -> Int) ->
   Int ->
   IO LazyDataloader
-internalInitLazyDataloader path bbs bs sq wti vs = do
+internalInitLazyDataloader path bbs bs sq vs = do
   h <- openFile path ReadMode
   hSetBinaryMode h True
 
   let dl0 = LazyDataloader
         { filePath       = path
-        , wordToIndex    = wti
         , vocabSize      = vs
         , currentIndex   = 0
         , byteBlockSize  = bbs

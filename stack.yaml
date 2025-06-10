@@ -1,24 +1,21 @@
-resolver: lts-20.26
-
+resolver: lts-22.43
 
 flags: {}
 
-
 extra-include-dirs:
-  - /home/ubuntu/libraries/hasktorch/deps/libtorch/include/torch/csrc/api/include
-  - /home/ubuntu/libraries/hasktorch/deps/libtorch/include
+  - /home/tcastillo/.local/lib/hasktorch/deps/libtorch/include/torch/csrc/api/include
+  - /home/tcastillo/.local/lib/hasktorch/deps/libtorch/include
 
 extra-lib-dirs:
-  - /home/ubuntu/libraries/hasktorch/deps/libtorch/lib
-  - /home/ubuntu/libraries/hasktorch/deps/mklml/lib
-  - /home/ubuntu/libraries/hasktorch/deps/libtokenizers/lib
+  - /home/tcastillo/.local/lib/hasktorch/deps/libtorch/lib
+  - /home/tcastillo/.local/lib/hasktorch/deps/mklml/lib
+  - /home/tcastillo/.local/lib/hasktorch/deps/libtokenizers/lib
 
 extra-deps:
-# for hasktorch
-  - /home/ubuntu/libraries/hasktorch/codegen
-  - /home/ubuntu/libraries/hasktorch/libtorch-ffi
-  - /home/ubuntu/libraries/hasktorch/libtorch-ffi-helper
-  - /home/ubuntu/libraries/hasktorch/hasktorch
+  - /home/tcastillo/.local/lib/hasktorch/codegen
+  - /home/tcastillo/.local/lib/hasktorch/libtorch-ffi
+  - /home/tcastillo/.local/lib/hasktorch/libtorch-ffi-helper
+  - /home/tcastillo/.local/lib/hasktorch/hasktorch
   - datasets-0.4.0@sha256:9bfd5b54c6c5e1e72384a890cf29bf85a02007e0a31c98753f7d225be3c7fa6a,4929
   - require-0.4.10@sha256:41b096daaca0d6be49239add1149af9f34c84640d09a7ffa9b45c55f089b5dac,3759
   - indexed-extras-0.2@sha256:e7e498023e33016fe45467dfee3c1379862e7e6654a806a965958fa1adc00304,1349
@@ -40,11 +37,9 @@ extra-deps:
   - inline-c-cpp-0.5.0.2
   - git: http://github.com/DaisukeBekki/nlp-tools.git
     commit: 0b6912850dbffd14ed16c3fa26a0773c877ba093
-# for hasktorch-tools
-  - /home/ubuntu/libraries/hasktorch-tools
 
 #allow-newer: true
-    
+
 build:
   haddock: false
   haddock-arguments:

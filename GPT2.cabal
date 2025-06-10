@@ -1,6 +1,6 @@
 cabal-version: 2.2
 
--- This file has been generated from package.yaml by hpack version 0.38.0.
+-- This file has been generated from package.yaml by hpack version 0.37.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -38,6 +38,7 @@ library
       Model.MLP
       Model.NormalLayer
       Model.Save
+      Tokenizer.Tokenizer
       Train.Training
       Train.TrainingTracker
       Utils
@@ -49,7 +50,8 @@ library
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
-      aeson
+      Cabal
+    , aeson
     , base >=4.7 && <5
     , bytestring
     , containers
@@ -70,7 +72,8 @@ executable GPT2-exe
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      GPT2
+      Cabal
+    , GPT2
     , aeson
     , base >=4.7 && <5
     , bytestring
@@ -100,7 +103,8 @@ test-suite GPT2-test
       test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      GPT2
+      Cabal
+    , GPT2
     , QuickCheck
     , aeson
     , base >=4.7 && <5

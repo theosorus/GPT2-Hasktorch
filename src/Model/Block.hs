@@ -18,6 +18,7 @@ import Torch.Functional.Internal as FI
 import Model.MLP
 import Model.CasualSelfAttention
 import Model.NormalLayer
+import Config (modelDevice)
 
 
 
@@ -39,11 +40,18 @@ data Block = Block
 
 blockInit :: BlockConfig -> IO Block
 blockInit BlockConfig{..} = do
-  ln1 <- normalLayerInit (NormalLayerConfig [embdDim_config] 1e-5  False )
-  ln2 <- normalLayerInit (NormalLayerConfig [embdDim_config] 1e-5  False )
-
+  ln1  <- normalLayerInit (NormalLayerConfig [embdDim_config] 1e-5 False)
+  ln2  <- normalLayerInit (NormalLayerConfig [embdDim_config] 1e-5 False)
   attn <- casualSelfAttentionInit (CasualSelfAttentionConfig embdDim_config nHead_config blockSize_config)
-  mlp <- mlpInit (MLPConfig embdDim_config)
+  mlp  <- mlpInit (MLPConfig embdDim_config)
+  let blk = Block
+        { embdDim = embdDim_config
+        , ln1      = ln1
+        , attn     = attn
+        , ln2      = ln2
+        , mlp      = mlp
+        }
+  return (toDevice modelDevice blk)
 
 
      

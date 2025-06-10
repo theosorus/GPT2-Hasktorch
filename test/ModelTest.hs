@@ -10,6 +10,8 @@ import Model.EmbeddingLayer (embeddingLayerInit, embeddingLayerForward, Embeddin
 import Utils (randInt)
 import Model.GPT 
 
+import Config (modelDevice)
+
 testBlock :: Spec
 testBlock = do
     let batchSize = 1
@@ -21,7 +23,8 @@ testBlock = do
         config = BlockConfig embdDim nHead blockSize
     it "blockForward output shape should match [batchSize, seqLen, embdDim]" $ do
         block <- blockInit config
-        input <- randIO' [batchSize, seqLen, embdDim]
+        rawinput <- randIO' [batchSize, seqLen, embdDim]
+        let input = toDevice modelDevice rawinput
         let output = blockForward block input
         shape output `shouldBe` [batchSize, seqLen, embdDim]
 
@@ -37,7 +40,8 @@ testCasualSelfAttention = do
         config = CasualSelfAttentionConfig embdDim nHead blockSize
     it "casualSelfAttention output shape should match [batchSize, seqLen, embdDim]" $ do
         block <- casualSelfAttentionInit config
-        input <- randIO' [batchSize, seqLen, embdDim]
+        rawinput <- randIO' [batchSize, seqLen, embdDim]
+        let input = toDevice modelDevice rawinput
         let output = casualSelfAttentionForward block input
         shape output `shouldBe` [batchSize, seqLen, embdDim]
 
@@ -52,7 +56,8 @@ testMlp = do
         config = MLPConfig embdDim
     it "mlp output shape should match [batchSize, seqLen, embdDim]" $ do
         mlp <- mlpInit config
-        input <- randIO' [batchSize, seqLen, embdDim]
+        rawinput <- randIO' [batchSize, seqLen, embdDim]
+        let input = toDevice modelDevice rawinput
         let output = mlpForward mlp input
         shape output `shouldBe` [batchSize, seqLen, embdDim]
 
@@ -68,7 +73,8 @@ testNormalLayer = do
         config = NormalLayerConfig [embdDim] 1e-5 False
     it "normalLayer output shape should match [batchSize, seqLen, embdDim]" $ do
         normalLayer <- normalLayerInit config
-        input <- randIO' [batchSize, seqLen, embdDim]
+        rawinput <- randIO' [batchSize, seqLen, embdDim]
+        let input = toDevice modelDevice rawinput
         let output = normalLayerForward normalLayer input
         shape output `shouldBe` [batchSize, seqLen, embdDim]
 

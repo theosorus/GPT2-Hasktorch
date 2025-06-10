@@ -119,16 +119,14 @@ computeAccuracy predictions targets =
 -- -> Tensor	 
 
 computeCrossEntropyLoss :: Tensor -> Tensor -> Tensor
-computeCrossEntropyLoss output target = 
-  -- output : (B*T, vocab_size)
-  -- target : (B*T)
-    let
-      weight = toDevice modelDevice $ ones' [last (shape output)]
-      loss = FI.cross_entropy_loss output target weight 1 (-100) 0.0
-
-    in
-      loss
-  
+computeCrossEntropyLoss output target =
+  let
+    outputD = toDevice modelDevice output
+    targetD = toDevice modelDevice target
+    weight  = toDevice modelDevice $ ones' [last (shape outputD)]
+    loss    = FI.cross_entropy_loss outputD targetD weight 1 (-100) 0.0
+  in
+    loss
 
 
 
