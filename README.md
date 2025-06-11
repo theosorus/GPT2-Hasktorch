@@ -51,7 +51,7 @@ The goal of this project is to reproduce GPT-2, created by OpenAI, in the Haskel
 ## TODOs
 
 - Variable Batch Size ❌
-- Weights sharing between the input token embedding layer (wte) and the output language modeling ❌ head (lm_head)
+- Weights sharing between the input token embedding layer (wte) and the output language modeling head (lm_head) ❌
 - Use Weights Decay ❌
 - Use Flash Attention ❌
 - Use Distributed Data Parallel ❌
