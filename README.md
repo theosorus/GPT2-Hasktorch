@@ -55,7 +55,7 @@ The goal of this project is to reproduce GPT-2, created by OpenAI, in the Haskel
 - Use Weights Decay ❌
 - Use Flash Attention ❌
 - Use Distributed Data Parallel ❌
-- Generation Function
+- Generation Function ❌
   
 
 
