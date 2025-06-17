@@ -46,6 +46,7 @@ The goal of this project is to reproduce GPT-2, created by OpenAI, in the Haskel
 - Performant training tracker ✅
 - Plot metrics in real time ✅
 - Load and use real GPT2 tokenizer ✅
+- Put on CUDA ✅
 
 
 ## TODOs
